@@ -1,4 +1,4 @@
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
 import { AnnotationStore, type Annotation, type Tool } from "./annotations";
 import { planDownscale, type DownscalePlan } from "./downscale";
 import { encodeCapNote } from "./capnote";
@@ -80,11 +80,14 @@ export class Annotator {
     this.path = path;
     this.reset();
 
+    // Load through Rust as a same-origin data: URL — the asset protocol would
+    // taint the canvas and make toBlob() throw SecurityError at commit.
+    const b64 = await invoke<string>("load_capture_png", { path });
     const image = new Image();
     await new Promise<void>((resolve, reject) => {
       image.onload = () => resolve();
       image.onerror = () => reject(new Error(`이미지 로드 실패: ${path}`));
-      image.src = convertFileSrc(path);
+      image.src = `data:image/png;base64,${b64}`;
     });
     this.image = image;
 

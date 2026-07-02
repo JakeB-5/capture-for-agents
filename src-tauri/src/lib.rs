@@ -101,6 +101,19 @@ fn copy_text_and_restore(app: AppHandle, text: String) -> Result<(), String> {
     Ok(())
 }
 
+/// Read the raw capture for the annotator, as base64. Loading via the asset
+/// protocol is cross-origin to the webview and taints the canvas, which
+/// blocks toBlob() at commit — a same-origin data: URL avoids that entirely.
+#[tauri::command]
+fn load_capture_png(path: String) -> Result<String, String> {
+    let p = std::path::Path::new(&path);
+    if !capture::is_capnote_png(p) {
+        return Err(format!("path is not a capnote PNG: {path}"));
+    }
+    let bytes = std::fs::read(p).map_err(|e| e.to_string())?;
+    Ok(base64::engine::general_purpose::STANDARD.encode(bytes))
+}
+
 /// Overwrite the raw capture with the burned-in, downscaled PNG produced by
 /// the webview. `data_base64` is standard base64 of the PNG bytes.
 #[tauri::command]
@@ -176,6 +189,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             show_capture_window,
             copy_text_and_restore,
+            load_capture_png,
             save_annotated_png,
             discard_capture,
             dismiss_window,
