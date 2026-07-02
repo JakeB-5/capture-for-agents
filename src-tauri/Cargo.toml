@@ -1,0 +1,31 @@
+[package]
+name = "capture-for-agents"
+version = "0.1.0"
+description = "macOS screenshot capture + annotation for AI coding agents (CapNote v1)"
+authors = ["JakeB-5"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "capture_for_agents_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "image-png", "protocol-asset"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Plugin versions pinned exactly: plugin edge cases are this phase's top risk,
+# so upgrades must be deliberate (see docs/plan.html §7, Electron escape hatch).
+tauri-plugin-global-shortcut = "=2.3.2"
+tauri-plugin-clipboard-manager = "=2.3.2"
+chrono = "0.4"
+png = "0.17"
+objc2-app-kit = { version = "0.3", features = ["NSWorkspace", "NSRunningApplication"] }
+objc2 = "0.6"

@@ -53,8 +53,8 @@ A2의 정규식은 `^\[(\d+)\] (point|rect|arrow) \(([^)]+\)?[^"]*)( "(.*)")?$` 
 
 ## 6. 남은 수동 확인 (사용자 실기기 필요 — Phase 1 착수 시)
 
-- [ ] `screencapture -i` 대화형 실사용: 드래그 선택, Space 창 모드 토글, ESC 취소 시 파일 미생성 확인 (TCC 권한 승인 상태에서)
-- [ ] iTerm2/Terminal/VS Code 터미널의 Claude Code에 실제 ⌘V 붙여넣기 (멀티라인 bracketed paste)
+- [x] `screencapture -i` 대화형 실사용: 드래그 선택, Space 창 모드 토글, ESC 취소 시 파일 미생성 확인 (TCC 권한 승인 상태에서) — **✅ 2026-07-02 Phase 1 실기기 확인** (Phase 1 스켈레톤 앱의 ⌥⇧C 트리거 경유, 3종 모두 정상)
+- [ ] iTerm2/Terminal/VS Code 터미널의 Claude Code에 실제 ⌘V 붙여넣기 (멀티라인 bracketed paste) — cmux 터미널 1종은 2026-07-02 Phase 1에서 확인(경로 텍스트 ⌘V → Claude Code가 이미지 수신), 3종 실측은 Phase 3
 - [ ] macOS 15+ 주기적 재승인 프롬프트 빈도 관찰
 
 ## 부록 — 테스트에 사용한 블록 원문 (동결 전 v1 초안)

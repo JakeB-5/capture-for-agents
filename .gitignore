@@ -1,15 +1,36 @@
 # OMC local state
 .omc/
 
+# gstack local artifacts
+.gstack/
+
 # macOS
 .DS_Store
 
-# Node (Phase 1 scaffold onwards)
-node_modules/
-dist/
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Tauri (Phase 1 scaffold onwards)
+# Node
+node_modules
+dist
+dist-ssr
+*.local
+
+# Tauri
 src-tauri/target/
 
-# gstack local artifacts
-.gstack/
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
