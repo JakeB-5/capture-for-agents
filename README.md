@@ -42,25 +42,27 @@ Capture for Agents의 해법은 **번호 라벨 + 부연설명 + 이중 채널**
 ```capnote v1
 image: /Users/jin/.capnote/2026-07-02-164812.png
 size: 1246x820
+scale: 1 image px = 1 CSS px
 source: region capture @2x, downscaled 1/2 (2026-07-02 16:48)
 context: Figma 시안 대비 카드 컴포넌트 디테일 미반영 3건
-[1] rect (288,120)-(456,214)
+[1] rect (288,120)-(456,214) "상품 카드"
     카드에 1px solid #E5E7EB 보더가 빠져 있음. Figma에는 있는데 구현에 없음.
-[2] arrow (524,412)->(524,468)
+[2] arrow (524,412)->(524,468) "카드 → 저장 버튼"
     카드와 하단 버튼 사이 마진이 시안은 24px인데 구현은 12px. 24px로 수정.
-[3] point (1108,96)
+[3] point (1108,96) "헤더 설정 아이콘"
     이 아이콘이 시안 기준 20x20인데 지금 16x16으로 렌더링됨.
-hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left), not CSS px.
+hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left); px values in notes are CSS px.
 ```
 
 ### 문법 요약
 
 | 요소 | 형식 | 비고 |
 | --- | --- | --- |
-| 헤더 | `image:` PNG 절대 경로 / `size:` WxH / `source:` 캡처 메타(선택) / `context:` 한 줄 요약(선택) | `size`가 곧 좌표 공간 |
+| 헤더 | `image:` PNG 절대 경로 / `size:` WxH / `scale:` px 비율 / `source:` 캡처 메타(선택) / `context:` 한 줄 요약(선택) | `size`가 곧 좌표 공간, `scale`은 표준 정책상 항상 1:1 |
 | 마커 | `[n] point (x,y)` | 번호 마커 |
 | 사각형 | `[n] rect (x1,y1)-(x2,y2)` | |
 | 화살표 | `[n] arrow (x1,y1)->(x2,y2)` | 꼬리→머리 방향 |
+| 라벨 | 좌표 뒤 `"…"` (선택) | 대상 요소의 가시 텍스트 라벨. 없어도 하위 호환 |
 | 노트 | 마커 라인 다음 줄, 4칸 들여쓰기 자유 텍스트 | 멀티라인 허용, 선택 |
 | hint | 마지막 줄, 에이전트 행동 지시 1줄 (영어) | |
 
@@ -75,14 +77,14 @@ Claude Code에서 이미지 붙여넣기는 macOS에서 ⌘V가 아닌 Ctrl+V라
 1. **클립보드는 텍스트 전용.** 이미지는 파일로 저장하고 절대 경로를 텍스트에 포함 — 에이전트가 직접 읽는다.
 2. **좌표계는 단 하나** — "저장된 최종 이미지의 픽셀"(원점 좌상단). 헤더 `size`가 좌표 공간을 선언하며, 원본 Retina 좌표는 절대 노출하지 않는다.
 3. **장변 ≤ 1568px PNG.** Anthropic 비전 API의 리사이즈 임계값 이하로 저장해 모델이 보는 픽셀 = 텍스트 좌표 공간이 정확히 1:1. Retina @2x는 1/2 축소, 작은 크롭은 네이티브 유지. JPEG 금지, 업스케일 금지.
-4. **번인은 필수, 단 다운스케일 후 최종 해상도에서 렌더링.** 번호 배지는 대상 픽셀을 가리지 않게 8~12px 오프셋 + 리더 라인. 노트 본문은 번인하지 않는다(텍스트 채널이 담당).
+4. **번인은 필수, 단 다운스케일 후 최종 해상도에서 렌더링.** 번호 배지는 대상 픽셀을 가리지 않게 8~12px 오프셋 + 리더 라인, rect는 점선+2px 아웃셋, point는 링 — 주석이 실제 UI로 오인되지 않게. 노트 본문은 번인하지 않는다(텍스트 채널이 담당).
 5. **마커·사각형·화살표가 하나의 자동 증가 번호 시퀀스를 공유.** 이 번호가 시각 채널과 의미 채널을 잇는 join key — 에이전트의 좌표 해석 정밀도에 의존하지 않는 이중 앵커링.
 
 ## 로드맵
 
 | Phase | 목표 | 예상 active-day |
 | --- | --- | --- |
-| 0 | 포맷 검증 스파이크 — 앱 없이 CapNote 블록을 수동 생성해 실제 Claude Code에서 E2E 검증, 스펙 동결 | 0.5d |
+| 0 | ✅ **완료 (2026-07-02)** 포맷 검증 스파이크 — 블라인드 에이전트 6개로 E2E 검증(마커 지목 9/9), 스펙 동결. [검증 리포트](docs/phase0-verification.md) | 0.5d |
 | 1 | 워킹 스켈레톤 — Tauri v2 메뉴바 앱, 전역 단축키, screencapture 래퍼, 경로-only 클립보드, 포커스 복귀, TCC 온보딩 | 1~2d |
 | 2 | 어노테이션 + CapNote — 스마트 툴 3종, 인라인 노트, 번인 렌더러, 1568px 다운스케일, 인코더, 파일 GC | 2~3d |
 | 3 | 폴리싱·견고화 — <300ms 창 표시, 키보드-온리, 히스토리, 멀티모니터 좌표 정확성, 터미널 3종 실측, 서명·공증 DMG | 2~3d |
