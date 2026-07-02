@@ -82,11 +82,11 @@
   <div class="meta">
     <span class="chip">설계 단계 v1</span>
     <span class="chip">작성일 2026-07-02</span>
-    <span class="chip" style="background:#ecfdf5;color:#059669;border-color:#a7f3d0">Phase 2 완료 · 대표 시나리오 실사용 가능</span>
+    <span class="chip" style="background:#ecfdf5;color:#059669;border-color:#a7f3d0">Phase 3 완료 · 배포 빌드(ad-hoc DMG)</span>
   </div>
   <h1>Capture for Agents — 작업계획서</h1>
   <p class="subtitle">AI 코딩 에이전트에게 시각적 피드백을 정확하게 전달하는 macOS 스크린샷 캡처+어노테이션 도구 · 포맷명 <strong>CapNote v1</strong></p>
-  <p class="meta">저장소 상태: Phase 2 어노테이션+CapNote 구현·실기기 E2E 검증 완료 · 대상 플랫폼: macOS · 스택: Tauri v2 + TypeScript Canvas</p>
+  <p class="meta">저장소 상태: Phase 0~3 완료 (공증·멀티모니터 실측 보류) · 대상 플랫폼: macOS · 스택: Tauri v2 + TypeScript Canvas</p>
 </header>
 
 <main>
@@ -97,20 +97,16 @@
      (3) "다음 작업" 배지의 x좌표, (4) 노드 아래 상태 줄, (5) 요약 칩, (6) 마지막 갱신 날짜 -->
 <section class="card" id="progress" style="border-top:4px solid #2563eb">
   <h2 style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap">진행 현황
-    <span class="small" style="font-weight:400">마지막 갱신 2026-07-02</span></h2>
+    <span class="small" style="font-weight:400">마지막 갱신 2026-07-03</span></h2>
   <p class="meta" style="margin:2px 0 12px">
-    <span class="chip" style="background:#ecfdf5;color:#059669;border-color:#a7f3d0;margin-bottom:4px">✅ 완료 — 설계·계획서, Phase 0 검증·동결 (9/9), Phase 1 워킹 스켈레톤, Phase 2 어노테이션+CapNote (실기기 E2E)</span>
-    <span class="chip" style="margin-bottom:4px">▶ 다음 — Phase 3 폴리싱·견고화 (2~3 active-day)</span>
-    <span class="chip" style="background:#f8fafc;color:#6b7280;border-color:#e5e7eb;margin-bottom:4px">⏳ 남음 — Phase 3, 약 2~3 active-day</span>
+    <span class="chip" style="background:#ecfdf5;color:#059669;border-color:#a7f3d0;margin-bottom:4px">✅ 완료 — 설계, Phase 0 동결 (9/9), Phase 1 스켈레톤, Phase 2 어노테이션+CapNote, Phase 3 폴리싱·배포 빌드</span>
+    <span class="chip" style="background:#f8fafc;color:#6b7280;border-color:#e5e7eb;margin-bottom:4px">⏸ 보류 — 공증(계정 부재) · 멀티모니터 실측(환경 부재)</span>
+    <span class="chip" style="margin-bottom:4px">▶ 다음 — Phase 4 백로그 (필요 실증 시에만)</span>
   </p>
-  <svg viewBox="0 0 880 140" role="img" aria-label="진행 현황 스텝퍼: 설계·Phase 0·Phase 1·Phase 2 완료, 다음 작업은 Phase 3 폴리싱, Phase 4 백로그">
+  <svg viewBox="0 0 880 140" role="img" aria-label="진행 현황 스텝퍼: 설계·Phase 0·Phase 1·Phase 2·Phase 3 완료, Phase 4는 백로그로 필요 실증 시에만 착수">
     <!-- track -->
     <line x1="70" y1="52" x2="810" y2="52" stroke="#e5e7eb" stroke-width="4"/>
-    <line x1="70" y1="52" x2="514" y2="52" stroke="#059669" stroke-width="4"/>
-    <!-- next-step badge -->
-    <rect x="618" y="4" width="88" height="22" rx="11" fill="#2563eb"/>
-    <text x="662" y="19" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">다음 작업 ▶</text>
-    <line x1="662" y1="26" x2="662" y2="32" stroke="#2563eb" stroke-width="1.5"/>
+    <line x1="70" y1="52" x2="662" y2="52" stroke="#059669" stroke-width="4"/>
     <!-- node 1: 설계 (done) -->
     <circle cx="70" cy="52" r="13" fill="#059669"/>
     <text x="70" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">✓</text>
@@ -135,13 +131,12 @@
     <text x="514" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase 2</text>
     <text x="514" y="106" text-anchor="middle" font-size="12" fill="#4b5563">어노테이션+CapNote</text>
     <text x="514" y="124" text-anchor="middle" font-size="11" fill="#059669">07-02 완료 · E2E 통과</text>
-    <!-- node 5: Phase 3 (next) -->
-    <circle cx="662" cy="52" r="18" fill="none" stroke="#bfdbfe" stroke-width="3"/>
-    <circle cx="662" cy="52" r="13" fill="#2563eb"/>
-    <text x="662" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">P3</text>
+    <!-- node 5: Phase 3 (done) -->
+    <circle cx="662" cy="52" r="13" fill="#059669"/>
+    <text x="662" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">✓</text>
     <text x="662" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase 3</text>
     <text x="662" y="106" text-anchor="middle" font-size="12" fill="#4b5563">폴리싱·견고화</text>
-    <text x="662" y="124" text-anchor="middle" font-size="11" font-weight="600" fill="#2563eb">다음 · 2~3d</text>
+    <text x="662" y="124" text-anchor="middle" font-size="11" fill="#059669">07-03 완료 · 예외 2건 보류</text>
     <!-- node 6: Phase 4 (backlog) -->
     <circle cx="810" cy="52" r="13" fill="#ffffff" stroke="#9ca3af" stroke-width="2" stroke-dasharray="4 3"/>
     <text x="810" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280">P4</text>
@@ -707,7 +702,7 @@ hint: Read the image file at the path above. Numbered badges matching [n] are bu
         <td><strong>3</strong><br>폴리싱·견고화</td>
         <td>매일 쓰는 도구의 신뢰성 확보 + 배포 가능 상태</td>
         <td>창 표시 &lt;300ms, 키보드-온리 완주, 히스토리 10건 + 재어노테이션 + 다시 복사, 멀티모니터/스케일팩터 좌표 정확성(PNG 실측 기반), 설정(단축키/경로/보존), 터미널 3종(iTerm2/Terminal/VS Code) 붙여넣기 실측, 에이전트 지목 정확도 평가·hint 문구 튜닝, 서명·공증 DMG</td>
-        <td>지목 정확도 평가 통과 + 배포 가능한 서명·공증 DMG</td>
+        <td>지목 정확도 평가 통과 + 배포 가능한 서명·공증 DMG <strong>— ✅ 2026-07-03 완료 (예외 2건 보류)</strong>: 정확도 평가 통과(실물 2건 블라인드, hint 튜닝 불필요), DMG는 ad-hoc 서명(공증은 Apple Developer 계정 확보 시), 멀티모니터 실측은 환경 부재로 보류. <a href="phase3-verification.md">phase3-verification.md</a></td>
         <td>2~3d</td>
       </tr>
       <tr>

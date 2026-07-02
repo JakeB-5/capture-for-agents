@@ -232,3 +232,112 @@ kbd {
   background: #b45309;
   color: #fff;
 }
+
+/* Settings view */
+#settings-view {
+  padding: 24px 28px 0;
+  gap: 0;
+}
+
+.settings-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-row label {
+  flex: none;
+  width: 120px;
+  font-size: 13px;
+  color: var(--fg);
+  text-align: right;
+}
+
+.form-row input[type="text"],
+.form-row input[type="number"] {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+.form-row input[type="text"]:focus,
+.form-row input[type="number"]:focus {
+  border-color: var(--accent);
+}
+
+.shortcut-input {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.shortcut-input.capturing {
+  border-color: var(--accent) !important;
+  color: var(--muted);
+}
+
+.form-row input[type="number"] {
+  max-width: 100px;
+  flex: none;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.settings-status {
+  font-size: 12px;
+  color: #ef4444;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-btns {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--fg);
+}
+
+#settings-view .hint-bar {
+  margin: auto -28px 0;
+}

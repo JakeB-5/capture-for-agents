@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -6,7 +7,7 @@ use std::time::{Duration, SystemTime};
 const SCREENCAPTURE: &str = "/usr/sbin/screencapture";
 
 pub enum CaptureOutcome {
-    /// Saved to ~/.capnote/YYYY-MM-DD-HHMMSS.png; scale is 2 on Retina, 1 otherwise.
+    /// Saved to the configured capture dir; scale is 2 on Retina, 1 otherwise.
     Captured { path: PathBuf, scale: u32 },
     /// User pressed ESC — screencapture exits without creating the file.
     Cancelled,
@@ -26,15 +27,6 @@ impl std::fmt::Display for CaptureError {
             CaptureError::Failed(msg) => write!(f, "screencapture failed: {msg}"),
         }
     }
-}
-
-fn capnote_dir() -> Result<PathBuf, CaptureError> {
-    let home = std::env::var("HOME")
-        .map_err(|_| CaptureError::Failed("HOME is not set".into()))?;
-    let dir = Path::new(&home).join(".capnote");
-    fs::create_dir_all(&dir)
-        .map_err(|e| CaptureError::Failed(format!("cannot create {}: {e}", dir.display())))?;
-    Ok(dir)
 }
 
 /// Destination path with a collision-safe timestamp name.
@@ -71,7 +63,7 @@ fn classify_failure(stderr: &str) -> CaptureError {
 
 /// Capture pixel density from the PNG pHYs chunk: 144dpi => @2x, else @1x.
 /// Best-effort — any read/parse failure means 1.
-fn png_scale(path: &Path) -> u32 {
+pub fn png_scale(path: &Path) -> u32 {
     let file = match fs::File::open(path) {
         Ok(f) => f,
         Err(_) => return 1,
@@ -92,16 +84,12 @@ fn png_scale(path: &Path) -> u32 {
     1
 }
 
-/// True iff `path` is a .png directly inside ~/.capnote (no traversal).
-pub fn is_capnote_png(path: &Path) -> bool {
+/// True iff `path` is a .png directly inside `configured_dir` (no traversal).
+/// `configured_dir` is expected to already be canonicalized or expandable.
+pub fn is_capnote_png(configured_dir: &Path, path: &Path) -> bool {
     if path.extension().and_then(|e| e.to_str()) != Some("png") {
         return false;
     }
-    let home = match std::env::var("HOME") {
-        Ok(h) => h,
-        Err(_) => return false,
-    };
-    let expected = Path::new(&home).join(".capnote");
     let actual_parent = match path.parent() {
         Some(p) => p,
         None => return false,
@@ -111,27 +99,28 @@ pub fn is_capnote_png(path: &Path) -> bool {
         Ok(p) => p,
         Err(_) => return false,
     };
-    let canon_expected = expected.canonicalize().unwrap_or(expected);
+    let canon_expected = configured_dir
+        .canonicalize()
+        .unwrap_or_else(|_| configured_dir.to_path_buf());
     canon_actual == canon_expected
 }
 
-/// Best-effort GC of ~/.capnote: remove *.png older than 14 days, then keep
-/// only the newest 500. Never errors — logs to stderr at most.
-pub fn gc_capnote_dir() {
-    let home = match std::env::var("HOME") {
-        Ok(h) => h,
-        Err(_) => return,
-    };
-    let dir = Path::new(&home).join(".capnote");
-    let entries = match fs::read_dir(&dir) {
+/// Best-effort GC of `dir`: remove *.png older than `days` days, then keep
+/// only the newest `max`. Deletes paired .capnote sidecars with each PNG and
+/// removes orphan .capnote files whose PNG no longer exists.
+/// Never errors — logs to stderr at most.
+pub fn gc_capnote_dir(dir: &Path, days: u32, max: usize) {
+    let entries = match fs::read_dir(dir) {
         Ok(e) => e,
         Err(_) => return,
     };
 
     let cutoff = SystemTime::now()
-        .checked_sub(Duration::from_secs(14 * 24 * 3600))
+        .checked_sub(Duration::from_secs(u64::from(days) * 24 * 3600))
         .unwrap_or(SystemTime::UNIX_EPOCH);
     let mut survivors: Vec<(SystemTime, PathBuf)> = Vec::new();
+    // Track stems that survive age GC (used for orphan sidecar cleanup below).
+    let mut surviving_stems: HashSet<String> = HashSet::new();
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -143,27 +132,66 @@ pub fn gc_capnote_dir() {
             Err(_) => continue,
         };
         if mtime < cutoff {
-            if let Err(e) = fs::remove_file(&path) {
-                eprintln!("capnote gc: {}: {e}", path.display());
-            }
+            // Delete PNG and its paired sidecar.
+            delete_with_sidecar(&path);
         } else {
+            if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+                surviving_stems.insert(stem.to_owned());
+            }
             survivors.push((mtime, path));
         }
     }
 
-    // Remove oldest excess beyond 500.
-    if survivors.len() > 500 {
+    // Remove oldest excess beyond `max`, including their sidecars.
+    if survivors.len() > max {
         survivors.sort_unstable_by_key(|(t, _)| *t);
-        for (_, path) in &survivors[..survivors.len() - 500] {
-            if let Err(e) = fs::remove_file(path) {
+        for (_, path) in &survivors[..survivors.len() - max] {
+            if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+                surviving_stems.remove(stem);
+            }
+            delete_with_sidecar(path);
+        }
+    }
+
+    // Remove orphan .capnote files whose PNG was already deleted (by prior GC
+    // runs or manual deletion) so sidecars never accumulate indefinitely.
+    let orphan_scan = match fs::read_dir(dir) {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+    for entry in orphan_scan.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("capnote") {
+            continue;
+        }
+        let stem = match path.file_stem().and_then(|s| s.to_str()) {
+            Some(s) => s.to_owned(),
+            None => continue,
+        };
+        if !surviving_stems.contains(&stem) {
+            if let Err(e) = fs::remove_file(&path) {
                 eprintln!("capnote gc: {}: {e}", path.display());
             }
         }
     }
 }
 
+/// Delete a PNG and its paired .capnote sidecar (if present). Best-effort.
+fn delete_with_sidecar(png: &Path) {
+    if let Err(e) = fs::remove_file(png) {
+        eprintln!("capnote gc: {}: {e}", png.display());
+    }
+    let sidecar = png.with_extension("capnote");
+    if sidecar.exists() {
+        if let Err(e) = fs::remove_file(&sidecar) {
+            eprintln!("capnote gc: {}: {e}", sidecar.display());
+        }
+    }
+}
+
 /// Interactive capture: drag selection, Space toggles window mode, ESC cancels.
-pub fn run_interactive_capture() -> Result<CaptureOutcome, CaptureError> {
+/// Saves to `dest_dir` (created if absent).
+pub fn run_interactive_capture(dest_dir: &Path) -> Result<CaptureOutcome, CaptureError> {
     let tmp = std::env::temp_dir().join(format!("capnote-{}.png", std::process::id()));
     let _ = fs::remove_file(&tmp);
 
@@ -178,7 +206,11 @@ pub fn run_interactive_capture() -> Result<CaptureOutcome, CaptureError> {
         return Ok(CaptureOutcome::Cancelled);
     }
 
-    let dest = dest_path(&capnote_dir()?);
+    // Ensure the configured directory exists before moving the temp file.
+    fs::create_dir_all(dest_dir)
+        .map_err(|e| CaptureError::Failed(format!("cannot create {}: {e}", dest_dir.display())))?;
+
+    let dest = dest_path(dest_dir);
     if fs::rename(&tmp, &dest).is_err() {
         // tmp and $HOME may be on different volumes.
         fs::copy(&tmp, &dest)

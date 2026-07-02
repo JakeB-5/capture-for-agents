@@ -41,6 +41,7 @@ export class Annotator {
   private activeTool: ActiveTool = "smart";
   private selectedIndex = -1;
   private inFlight = false;
+  private reannotate = false;
 
   // drag state
   private dragStartNat: { x: number; y: number } | null = null;
@@ -76,8 +77,10 @@ export class Annotator {
     canvas.addEventListener("pointercancel", () => this.clearDrag());
   }
 
-  async present(path: string, scale: number): Promise<void> {
+  async present(path: string, scale: number, reannotate = false): Promise<void> {
+    const t0 = performance.now();
     this.path = path;
+    this.reannotate = reannotate;
     this.reset();
 
     // Load through Rust as a same-origin data: URL — the asset protocol would
@@ -114,6 +117,9 @@ export class Annotator {
 
     this.applyCanvasSize();
     this.redraw();
+    // Phase 3 target: capture-done → window shown < 300ms (measure in dev
+    // via Safari Web Inspector console; excludes screencapture itself).
+    console.info(`present: ${Math.round(performance.now() - t0)}ms (${naturalW}x${naturalH})`);
   }
 
   private reset(): void {
@@ -356,6 +362,8 @@ export class Annotator {
         context,
       });
 
+      // Sidecar powers the tray History submenu (copy again / re-annotate).
+      await invoke("save_capnote_block", { path, block: text });
       await invoke("copy_text_and_restore", { text });
       this.reset();
     } catch (err) {
@@ -368,7 +376,12 @@ export class Annotator {
   async cancel(): Promise<void> {
     const path = this.path;
     if (!path) return;
-    await invoke("discard_capture", { path });
+    // "Cancel saves nothing" applies to fresh captures only — a re-annotation
+    // opened from History must leave the committed PNG in place (past CapNote
+    // blocks reference it).
+    if (!this.reannotate) {
+      await invoke("discard_capture", { path });
+    }
     await invoke("dismiss_window");
     this.reset();
   }
