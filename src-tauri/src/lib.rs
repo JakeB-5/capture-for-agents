@@ -5,7 +5,7 @@ use std::process::Command;
 use std::sync::Mutex;
 
 use base64::Engine;
-use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
+use tauri::menu::{IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
@@ -26,6 +26,9 @@ struct AppState {
 struct CaptureDonePayload {
     path: String,
     scale: u32,
+    /// True when reopening a committed capture from History — ESC must then
+    /// close without deleting the PNG (past CapNote blocks reference it).
+    reannotate: bool,
 }
 
 /// Remember the frontmost app, run interactive screencapture on a worker
@@ -54,6 +57,7 @@ fn trigger_capture(app: &AppHandle) {
                     CaptureDonePayload {
                         path: path.to_string_lossy().to_string(),
                         scale,
+                        reannotate: false,
                     },
                 );
             }
@@ -132,6 +136,20 @@ fn save_annotated_png(path: String, data_base64: String) -> Result<(), String> {
     std::fs::write(p, &bytes).map_err(|e| e.to_string())
 }
 
+/// Persist the CapNote block next to its PNG (same stem + ".capnote") so
+/// History can re-copy it later. Refreshes the History tray submenu.
+#[tauri::command]
+fn save_capnote_block(app: AppHandle, path: String, block: String) -> Result<(), String> {
+    let p = std::path::Path::new(&path);
+    if !capture::is_capnote_png(p) {
+        return Err(format!("path is not a capnote PNG: {path}"));
+    }
+    let sidecar = p.with_extension("capnote");
+    std::fs::write(&sidecar, &block).map_err(|e| e.to_string())?;
+    rebuild_tray_menu(&app);
+    Ok(())
+}
+
 /// ESC cancels the whole annotation: the raw capture is removed so nothing
 /// is left behind (the spec says cancel saves nothing).
 #[tauri::command]
@@ -181,9 +199,173 @@ fn open_screen_recording_settings() -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
+// ── History tray helpers ────────────────────────────────────────────────────
+
+/// Returns up to 10 .capnote sidecar stems from ~/.capnote, newest-mtime first.
+fn history_stems() -> Vec<String> {
+    let home = match std::env::var("HOME") {
+        Ok(h) => h,
+        Err(_) => return vec![],
+    };
+    let dir = std::path::Path::new(&home).join(".capnote");
+    let entries = match std::fs::read_dir(&dir) {
+        Ok(e) => e,
+        Err(_) => return vec![],
+    };
+    let mut files: Vec<(std::time::SystemTime, String)> = Vec::new();
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("capnote") {
+            continue;
+        }
+        let stem = match path.file_stem().and_then(|s| s.to_str()) {
+            Some(s) => s.to_owned(),
+            None => continue,
+        };
+        let mtime = match entry.metadata().and_then(|m| m.modified()) {
+            Ok(t) => t,
+            Err(_) => continue,
+        };
+        files.push((mtime, stem));
+    }
+    // Newest first.
+    files.sort_unstable_by(|a, b| b.0.cmp(&a.0));
+    files.into_iter().take(10).map(|(_, s)| s).collect()
+}
+
+/// Build one History entry: submenu titled STEM → ["Copy CapNote", "Re-annotate"].
+/// Item IDs encode both action and stem so on_menu_event can route without state.
+fn build_entry_submenu(app: &AppHandle, stem: &str) -> tauri::Result<Submenu<tauri::Wry>> {
+    let copy_i = MenuItem::with_id(
+        app,
+        format!("hist-copy:{stem}"),
+        "Copy CapNote",
+        true,
+        None::<&str>,
+    )?;
+    let reannot_i = MenuItem::with_id(
+        app,
+        format!("hist-reannot:{stem}"),
+        "Re-annotate",
+        true,
+        None::<&str>,
+    )?;
+    Submenu::with_items(
+        app,
+        stem,
+        true,
+        &[
+            &copy_i as &dyn IsMenuItem<tauri::Wry>,
+            &reannot_i as &dyn IsMenuItem<tauri::Wry>,
+        ],
+    )
+}
+
+/// Build the full tray menu from the current disk state.
+fn build_tray_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
+    let capture_i = MenuItem::with_id(
+        app,
+        "capture",
+        format!("Capture ({SHORTCUT_LABEL})"),
+        true,
+        None::<&str>,
+    )?;
+    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let sep = PredefinedMenuItem::separator(app)?;
+
+    let stems = history_stems();
+    let history_sub: Submenu<tauri::Wry> = if stems.is_empty() {
+        let empty =
+            MenuItem::with_id(app, "hist-empty", "No captures yet", false, None::<&str>)?;
+        Submenu::with_items(app, "History", true, &[&empty as &dyn IsMenuItem<tauri::Wry>])?
+    } else {
+        let entries: Vec<Submenu<tauri::Wry>> = stems
+            .iter()
+            .map(|s| build_entry_submenu(app, s))
+            .collect::<tauri::Result<_>>()?;
+        let refs: Vec<&dyn IsMenuItem<tauri::Wry>> =
+            entries.iter().map(|e| e as &dyn IsMenuItem<tauri::Wry>).collect();
+        Submenu::with_items(app, "History", true, &refs)?
+    };
+
+    Menu::with_items(
+        app,
+        &[
+            &capture_i as &dyn IsMenuItem<tauri::Wry>,
+            &history_sub as &dyn IsMenuItem<tauri::Wry>,
+            &sep as &dyn IsMenuItem<tauri::Wry>,
+            &quit_i as &dyn IsMenuItem<tauri::Wry>,
+        ],
+    )
+}
+
+/// Swap the tray menu for a freshly-built one; best-effort (logs on error).
+fn rebuild_tray_menu(app: &AppHandle) {
+    match build_tray_menu(app) {
+        Ok(menu) => {
+            if let Some(tray) = app.tray_by_id("main-tray") {
+                if let Err(e) = tray.set_menu(Some(menu)) {
+                    eprintln!("capnote: set_menu failed: {e}");
+                }
+            }
+        }
+        Err(e) => eprintln!("capnote: build_tray_menu failed: {e}"),
+    }
+}
+
+/// Read the .capnote sidecar for STEM and write its text to the clipboard.
+fn handle_hist_copy(app: &AppHandle, stem: &str) {
+    let home = match std::env::var("HOME") {
+        Ok(h) => h,
+        Err(_) => return,
+    };
+    let sidecar = std::path::Path::new(&home)
+        .join(".capnote")
+        .join(format!("{stem}.capnote"));
+    match std::fs::read_to_string(&sidecar) {
+        Ok(block) => {
+            if let Err(e) = app.clipboard().write_text(block) {
+                eprintln!("capnote: hist-copy clipboard write failed: {e}");
+            }
+        }
+        Err(e) => eprintln!("capnote: hist-copy read {}: {e}", sidecar.display()),
+    }
+}
+
+/// Emit capture-done for STEM's PNG so the webview reopens the annotator.
+/// No-op (with log) if the PNG no longer exists.
+fn handle_hist_reannot(app: &AppHandle, stem: &str) {
+    let home = match std::env::var("HOME") {
+        Ok(h) => h,
+        Err(_) => return,
+    };
+    let png = std::path::Path::new(&home)
+        .join(".capnote")
+        .join(format!("{stem}.png"));
+    if !png.exists() {
+        eprintln!("capnote: re-annotate: PNG not found: {}", png.display());
+        return;
+    }
+    let scale = capture::png_scale(&png);
+    let _ = app.emit(
+        "capture-done",
+        CaptureDonePayload {
+            path: png.to_string_lossy().to_string(),
+            scale,
+            reannotate: true,
+        },
+    );
+}
+
+// ── App entry point ─────────────────────────────────────────────────────────
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // Single-instance guard registered first per plugin docs.
+        .plugin(tauri_plugin_single_instance::init(|_app, _argv, _cwd| {
+            eprintln!("capnote: second instance launched; ignoring");
+        }))
         .plugin(tauri_plugin_clipboard_manager::init())
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
@@ -191,6 +373,7 @@ pub fn run() {
             copy_text_and_restore,
             load_capture_png,
             save_annotated_png,
+            save_capnote_block,
             discard_capture,
             dismiss_window,
             get_app_status,
@@ -201,32 +384,33 @@ pub fn run() {
             // Menubar-resident: no dock icon, no app switcher entry.
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
-            // GC old captures on startup without blocking the main thread.
-            std::thread::spawn(capture::gc_capnote_dir);
-
-            let capture_i = MenuItem::with_id(
-                app,
-                "capture",
-                format!("Capture ({SHORTCUT_LABEL})"),
-                true,
-                None::<&str>,
-            )?;
-            let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-            let menu = Menu::with_items(
-                app,
-                &[&capture_i, &PredefinedMenuItem::separator(app)?, &quit_i],
-            )?;
+            let menu = build_tray_menu(app.handle())?;
             TrayIconBuilder::with_id("main-tray")
                 .icon(app.default_window_icon().unwrap().clone())
                 .icon_as_template(true)
                 .menu(&menu)
                 .show_menu_on_left_click(true)
-                .on_menu_event(|app, event| match event.id.as_ref() {
-                    "capture" => trigger_capture(app),
-                    "quit" => app.exit(0),
-                    _ => {}
+                .on_menu_event(|app, event| {
+                    let id = event.id.as_ref();
+                    if id == "capture" {
+                        trigger_capture(app);
+                    } else if id == "quit" {
+                        app.exit(0);
+                    } else if let Some(stem) = id.strip_prefix("hist-copy:") {
+                        handle_hist_copy(app, stem);
+                    } else if let Some(stem) = id.strip_prefix("hist-reannot:") {
+                        handle_hist_reannot(app, stem);
+                    }
                 })
                 .build(app)?;
+
+            // GC old captures off the main thread, after the tray exists so the
+            // History submenu can drop any entries the GC removed.
+            let gc_handle = app.handle().clone();
+            std::thread::spawn(move || {
+                capture::gc_capnote_dir();
+                rebuild_tray_menu(&gc_handle);
+            });
 
             let shortcut = Shortcut::new(Some(Modifiers::ALT | Modifiers::SHIFT), Code::KeyC);
             app.handle().plugin(

@@ -18,6 +18,8 @@ interface AppStatus {
 interface CaptureDonePayload {
   path: string;
   scale: number;
+  // History "Re-annotate" opens a committed PNG — ESC must not delete it.
+  reannotate: boolean;
 }
 
 const banner = document.querySelector<HTMLDivElement>("#banner")!;
@@ -76,7 +78,7 @@ window.addEventListener("DOMContentLoaded", () => {
   void listen<CaptureDonePayload>("capture-done", (event) => {
     showView(captureView);
     void annotator
-      .present(event.payload.path, event.payload.scale)
+      .present(event.payload.path, event.payload.scale, event.payload.reannotate)
       .catch((e) => {
         showView(onboardingView);
         onboardingStatus.textContent = `캡처 로드 실패: ${String(e)}`;

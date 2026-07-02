@@ -22,12 +22,21 @@ const LEADER_STOP = 3;       // stop leader 3px short of anchor to avoid occlusi
 const HIT_TOL = 6;           // hit-test tolerance (final px)
 const BADGE_MARGIN = 2;      // min clearance between badge edge and image edge
 
-// Candidate directions for badge placement: up-left wins if it fits.
-const BADGE_DIRS: ReadonlyArray<readonly [number, number]> = [
-  [-1 / Math.SQRT2, -1 / Math.SQRT2], // up-left
+// Collision-avoidance thresholds.
+const BADGE_SEP_MIN = 2 * BADGE_R + 2;   // min center-to-center between badges (24 px)
+const ANCHOR_CLEAR_MIN = BADGE_R + 6;    // min badge-center-to-anchor distance (17 px)
+const BADGE_RING2_EXTRA = 14;            // additional offset for second candidate ring
+
+// Candidate directions: 4 diagonals (up-left first, frozen order) then 4 cardinals.
+const BADGE_DIRS8: ReadonlyArray<readonly [number, number]> = [
+  [-1 / Math.SQRT2, -1 / Math.SQRT2], // up-left  (diagonal, preferred)
   [1 / Math.SQRT2, -1 / Math.SQRT2],  // up-right
   [-1 / Math.SQRT2, 1 / Math.SQRT2],  // down-left
   [1 / Math.SQRT2, 1 / Math.SQRT2],   // down-right
+  [0, -1],                             // up     (cardinal)
+  [1, 0],                              // right
+  [0, 1],                              // down
+  [-1, 0],                             // left
 ];
 
 // ── Internal geometry helpers ─────────────────────────────────────────────────
@@ -61,33 +70,70 @@ function anchorFinal(a: Annotation, plan: DownscalePlan): { ax: number; ay: numb
   return { ax: a.x1 * f, ay: a.y1 * f };
 }
 
-/** Compute badge center in final-image px.
- *  Single source of truth: drawAnnotations, hitTest, badgeCenter all use this. */
-function badgePlacement(a: Annotation, plan: DownscalePlan): { x: number; y: number } {
-  const { ax, ay } = anchorFinal(a, plan);
+/** Sequential deterministic badge placement with collision avoidance.
+ * Returns one {x,y} center per annotation in final-image px, same index order.
+ * Each badge is placed considering all previously placed badges (indices < i),
+ * so order matters: index 0 is unconstrained, later badges adapt.
+ * O(n²) on ≤20 annotations — no caching needed. */
+function computeBadgePlacements(
+  annotations: readonly Annotation[],
+  plan: DownscalePlan,
+): { x: number; y: number }[] {
   const W = plan.finalW;
   const H = plan.finalH;
+  const placed: { x: number; y: number }[] = [];
+  const anchors = annotations.map((a) => anchorFinal(a, plan));
 
-  for (const [dx, dy] of BADGE_DIRS) {
-    const cx = ax + dx * BADGE_DIST;
-    const cy = ay + dy * BADGE_DIST;
-    if (
+  for (let i = 0; i < annotations.length; i++) {
+    const { ax, ay } = anchors[i]!;
+
+    // 16 candidates: ring 1 at BADGE_DIST, ring 2 at BADGE_DIST + BADGE_RING2_EXTRA.
+    const candidates: { x: number; y: number }[] = [];
+    for (const dist of [BADGE_DIST, BADGE_DIST + BADGE_RING2_EXTRA]) {
+      for (const [dx, dy] of BADGE_DIRS8) {
+        candidates.push({ x: ax + dx * dist, y: ay + dy * dist });
+      }
+    }
+
+    // Rule 1: badge circle fully within image (always required, never relaxed).
+    const inBounds = (cx: number, cy: number): boolean =>
       cx - BADGE_R >= BADGE_MARGIN &&
       cy - BADGE_R >= BADGE_MARGIN &&
       cx + BADGE_R <= W - BADGE_MARGIN &&
-      cy + BADGE_R <= H - BADGE_MARGIN
-    ) {
-      return { x: cx, y: cy };
+      cy + BADGE_R <= H - BADGE_MARGIN;
+
+    // Rule 2: no overlap with already-placed badges — center-to-center ≥ BADGE_SEP_MIN.
+    const clearOfBadges = (cx: number, cy: number): boolean =>
+      placed.every((p) => squaredDist(cx, cy, p.x, p.y) >= BADGE_SEP_MIN * BADGE_SEP_MIN);
+
+    // Rule 3: does not cover another annotation's anchor point (every j ≠ i).
+    const clearOfAnchors = (cx: number, cy: number): boolean =>
+      anchors.every(
+        (anc, j) =>
+          j === i ||
+          squaredDist(cx, cy, anc.ax, anc.ay) >= ANCHOR_CLEAR_MIN * ANCHOR_CLEAR_MIN,
+      );
+
+    // Progressive relaxation: all rules → drop rule 3 → drop rule 2 → clamp.
+    let result =
+      candidates.find((c) => inBounds(c.x, c.y) && clearOfBadges(c.x, c.y) && clearOfAnchors(c.x, c.y)) ??
+      candidates.find((c) => inBounds(c.x, c.y) && clearOfBadges(c.x, c.y)) ??   // relax rule 3
+      candidates.find((c) => inBounds(c.x, c.y));                                 // relax rule 2
+
+    if (!result) {
+      // Final fallback: clamp up-left candidate into image bounds.
+      const fcx = ax - BADGE_DIST / Math.SQRT2;
+      const fcy = ay - BADGE_DIST / Math.SQRT2;
+      result = {
+        x: Math.max(BADGE_R + BADGE_MARGIN, Math.min(W - BADGE_R - BADGE_MARGIN, fcx)),
+        y: Math.max(BADGE_R + BADGE_MARGIN, Math.min(H - BADGE_R - BADGE_MARGIN, fcy)),
+      };
     }
+
+    placed.push(result);
   }
 
-  // None fit — clamp the up-left candidate into image bounds.
-  const fallbackCx = ax - BADGE_DIST / Math.SQRT2;
-  const fallbackCy = ay - BADGE_DIST / Math.SQRT2;
-  return {
-    x: Math.max(BADGE_R + BADGE_MARGIN, Math.min(W - BADGE_R - BADGE_MARGIN, fallbackCx)),
-    y: Math.max(BADGE_R + BADGE_MARGIN, Math.min(H - BADGE_R - BADGE_MARGIN, fallbackCy)),
-  };
+  return placed;
 }
 
 // ── Canvas drawing helpers ────────────────────────────────────────────────────
@@ -184,9 +230,10 @@ function drawBadge(
   ctx: CanvasRenderingContext2D,
   a: Annotation,
   index: number,
+  placement: { x: number; y: number },
   plan: DownscalePlan,
 ): void {
-  const { x: cx, y: cy } = badgePlacement(a, plan);
+  const { x: cx, y: cy } = placement;
   const { ax, ay } = anchorFinal(a, plan);
 
   // Leader line from badge edge toward anchor, stopping short to avoid covering target.
@@ -231,6 +278,9 @@ export function drawAnnotations(
   annotations: readonly Annotation[],
   plan: DownscalePlan,
 ): void {
+  // Compute all badge positions once — preview, burn-in, and hit-test share this.
+  const placements = computeBadgePlacements(annotations, plan);
+
   // All shapes first so badges always render on top regardless of draw order.
   for (const a of annotations) {
     if (a.kind === "point") drawPoint(ctx, a, plan);
@@ -238,7 +288,7 @@ export function drawAnnotations(
     else drawArrow(ctx, a, plan);
   }
   for (let i = 0; i < annotations.length; i++) {
-    drawBadge(ctx, annotations[i]!, i, plan);
+    drawBadge(ctx, annotations[i]!, i, placements[i]!, plan);
   }
 }
 
@@ -272,12 +322,16 @@ export function hitTest(
   const fx = x * plan.factor;
   const fy = y * plan.factor;
 
+  // Placements computed once per call — O(n²) on ≤20 annotations is negligible
+  // for a pointer-event handler; badge positions must stay in sync with draw.
+  const placements = computeBadgePlacements(annotations, plan);
+
   // Iterate last to first so the topmost-drawn annotation wins.
   for (let i = annotations.length - 1; i >= 0; i--) {
     const a = annotations[i]!;
 
     // Badge hit (takes priority over shape hit).
-    const { x: bx, y: by } = badgePlacement(a, plan);
+    const { x: bx, y: by } = placements[i]!;
     if (squaredDist(fx, fy, bx, by) <= BADGE_R * BADGE_R) return i;
 
     // Shape hit.
@@ -316,7 +370,6 @@ export function badgeCenter(
   index: number,
   plan: DownscalePlan,
 ): { x: number; y: number } {
-  const a = annotations[index];
-  if (!a) return { x: 0, y: 0 };
-  return badgePlacement(a, plan);
+  if (!annotations[index]) return { x: 0, y: 0 };
+  return computeBadgePlacements(annotations, plan)[index] ?? { x: 0, y: 0 };
 }
