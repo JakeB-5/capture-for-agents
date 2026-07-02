@@ -60,5 +60,43 @@
         <span class="keys"><kbd>Esc</kbd> 닫기</span>
       </footer>
     </main>
+
+    <!-- Settings view: shown when tray "Settings…" is clicked -->
+    <main id="settings-view" class="view hidden">
+      <div class="settings-form">
+        <div class="form-row">
+          <label for="shortcut-input">단축키</label>
+          <input
+            id="shortcut-input"
+            class="shortcut-input"
+            type="text"
+            readonly
+            placeholder="클릭 후 단축키 입력"
+          />
+        </div>
+        <div class="form-row">
+          <label for="capture-dir-input">저장 경로</label>
+          <input id="capture-dir-input" type="text" placeholder="~/.capnote" />
+        </div>
+        <div class="form-row">
+          <label for="retention-days-input">보존 기간(일)</label>
+          <input id="retention-days-input" type="number" min="1" />
+        </div>
+        <div class="form-row">
+          <label for="retention-max-input">최대 보관 개수</label>
+          <input id="retention-max-input" type="number" min="10" />
+        </div>
+        <div class="form-actions">
+          <span id="settings-status" class="settings-status"></span>
+          <div class="form-btns">
+            <button id="settings-cancel" class="btn-secondary">취소</button>
+            <button id="settings-save" class="btn-primary">저장</button>
+          </div>
+        </div>
+      </div>
+      <footer class="hint-bar">
+        <span class="keys"><kbd>Esc</kbd> 닫기</span>
+      </footer>
+    </main>
   </body>
 </html>
