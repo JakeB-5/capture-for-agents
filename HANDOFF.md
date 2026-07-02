@@ -15,7 +15,8 @@
   - `src-tauri/src/macos.rs` — frontmost 앱 기억·복귀 (objc2-app-kit NSWorkspace/NSRunningApplication, TCC 프롬프트 없음)
   - `src/main.ts` — 캡처 프리뷰(이미지 논리 크기로 창 리사이즈)·TCC 온보딩 뷰·키 바인딩(⌘⏎/Esc)
   - 이미지 표시는 asset protocol (`$HOME/.capnote/**` 스코프, `tauri.conf.json`)
-- 커밋 흐름: `dev` ← `feature/phase1-working-skeleton` 머지 완료. 원격 없음(로컬 전용).
+- 커밋 흐름: `dev` ← `feature/phase1-working-skeleton` `--no-ff` 머지 완료(`de55cc1`; 스캐폴드 `502ca3d` → 구현 `a31fddc` → 문서 `8b785ec`). 원격 없음(로컬 전용).
+- 잔여물: `~/.capnote/`에 Phase 0~1 테스트 캡처 5장 남아 있음(지워도 무방 — GC는 Phase 2 항목 6). dev 앱은 세션 종료 시 함께 내려가므로 도그푸딩은 터미널에서 직접 `pnpm tauri dev`.
 - Phase 1의 실측 발견:
   1. **macOS 14+ 협조적 활성화로 포커스 복귀 동작** — `activateWithOptions(empty)`로 충분 (`ActivateIgnoringOtherApps`는 deprecated·무효). 우리 창이 frontmost일 때 호출되므로 성립.
   2. **동시 인터랙티브 캡처 불가** — 앱 인스턴스 2개가 동시에 screencapture를 띄우면 `cannot run two interactive screen captures at a time` (exit 1, stderr). 인스턴스 내 재진입은 `capturing` 플래그로 방어했으나 **싱글 인스턴스 강제는 없음** → Phase 3 폴리싱 후보(`tauri-plugin-single-instance`). dev 중 `tauri dev` 이중 실행에 주의.
