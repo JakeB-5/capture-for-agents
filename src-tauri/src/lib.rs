@@ -4,6 +4,7 @@ mod macos;
 use std::process::Command;
 use std::sync::Mutex;
 
+use base64::Engine;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager};
@@ -17,6 +18,14 @@ struct AppState {
     prev_app_pid: Mutex<Option<i32>>,
     capturing: Mutex<bool>,
     shortcut_registered: Mutex<bool>,
+}
+
+/// Payload for the "capture-done" event emitted to the webview.
+#[derive(serde::Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+struct CaptureDonePayload {
+    path: String,
+    scale: u32,
 }
 
 /// Remember the frontmost app, run interactive screencapture on a worker
@@ -39,8 +48,14 @@ fn trigger_capture(app: &AppHandle) {
         *state.capturing.lock().unwrap() = false;
 
         match result {
-            Ok(capture::CaptureOutcome::Captured(path)) => {
-                let _ = app.emit("capture-done", path.to_string_lossy().to_string());
+            Ok(capture::CaptureOutcome::Captured { path, scale }) => {
+                let _ = app.emit(
+                    "capture-done",
+                    CaptureDonePayload {
+                        path: path.to_string_lossy().to_string(),
+                        scale,
+                    },
+                );
             }
             Ok(capture::CaptureOutcome::Cancelled) => {}
             Err(capture::CaptureError::TccDenied(msg)) => {
@@ -80,10 +95,56 @@ fn show_capture_window(app: AppHandle, width: f64, height: f64) {
 
 /// Invariant 1: the clipboard carries text only — never image data.
 #[tauri::command]
-fn copy_path_and_restore(app: AppHandle, path: String) -> Result<(), String> {
-    app.clipboard().write_text(path).map_err(|e| e.to_string())?;
+fn copy_text_and_restore(app: AppHandle, text: String) -> Result<(), String> {
+    app.clipboard().write_text(text).map_err(|e| e.to_string())?;
     hide_and_restore(&app);
     Ok(())
+}
+
+/// Read the raw capture for the annotator, as base64. Loading via the asset
+/// protocol is cross-origin to the webview and taints the canvas, which
+/// blocks toBlob() at commit — a same-origin data: URL avoids that entirely.
+#[tauri::command]
+fn load_capture_png(path: String) -> Result<String, String> {
+    let p = std::path::Path::new(&path);
+    if !capture::is_capnote_png(p) {
+        return Err(format!("path is not a capnote PNG: {path}"));
+    }
+    let bytes = std::fs::read(p).map_err(|e| e.to_string())?;
+    Ok(base64::engine::general_purpose::STANDARD.encode(bytes))
+}
+
+/// Overwrite the raw capture with the burned-in, downscaled PNG produced by
+/// the webview. `data_base64` is standard base64 of the PNG bytes.
+#[tauri::command]
+fn save_annotated_png(path: String, data_base64: String) -> Result<(), String> {
+    let p = std::path::Path::new(&path);
+    if !capture::is_capnote_png(p) {
+        return Err(format!("path is not a capnote PNG: {path}"));
+    }
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(&data_base64)
+        .map_err(|e| format!("base64 decode failed: {e}"))?;
+    // Sanity-check magic bytes before clobbering the file.
+    if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+        return Err("decoded data is not a valid PNG".into());
+    }
+    std::fs::write(p, &bytes).map_err(|e| e.to_string())
+}
+
+/// ESC cancels the whole annotation: the raw capture is removed so nothing
+/// is left behind (the spec says cancel saves nothing).
+#[tauri::command]
+fn discard_capture(path: String) -> Result<(), String> {
+    let p = std::path::Path::new(&path);
+    if !capture::is_capnote_png(p) {
+        return Err(format!("path is not a capnote PNG: {path}"));
+    }
+    match std::fs::remove_file(p) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
 }
 
 #[tauri::command]
@@ -127,7 +188,10 @@ pub fn run() {
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
             show_capture_window,
-            copy_path_and_restore,
+            copy_text_and_restore,
+            load_capture_png,
+            save_annotated_png,
+            discard_capture,
             dismiss_window,
             get_app_status,
             run_test_capture,
@@ -136,6 +200,9 @@ pub fn run() {
         .setup(|app| {
             // Menubar-resident: no dock icon, no app switcher entry.
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+            // GC old captures on startup without blocking the main thread.
+            std::thread::spawn(capture::gc_capnote_dir);
 
             let capture_i = MenuItem::with_id(
                 app,

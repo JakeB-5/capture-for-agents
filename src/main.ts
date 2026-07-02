@@ -1,5 +1,6 @@
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { Annotator } from "./annotator";
 
 interface TestCaptureReport {
   ok: boolean;
@@ -13,56 +14,25 @@ interface AppStatus {
   shortcutLabel: string;
 }
 
+// Phase 2: capture-done payload is now an object (was a plain string path)
+interface CaptureDonePayload {
+  path: string;
+  scale: number;
+}
+
 const banner = document.querySelector<HTMLDivElement>("#banner")!;
 const captureView = document.querySelector<HTMLElement>("#capture-view")!;
 const onboardingView = document.querySelector<HTMLElement>("#onboarding-view")!;
-const captureImg = document.querySelector<HTMLImageElement>("#capture-img")!;
-const capturePath = document.querySelector<HTMLSpanElement>("#capture-path")!;
 const onboardingStatus =
   document.querySelector<HTMLParagraphElement>("#onboarding-status")!;
 
-let currentPath: string | null = null;
-
-function showView(view: HTMLElement) {
+function showView(view: HTMLElement): void {
   for (const el of [captureView, onboardingView]) {
     el.classList.toggle("hidden", el !== view);
   }
 }
 
-// Extra logical height the window needs beyond the image itself.
-const HINT_BAR_HEIGHT = 34;
-
-async function presentCapture(path: string) {
-  currentPath = path;
-  capturePath.textContent = path;
-  showView(captureView);
-
-  await new Promise<void>((resolve, reject) => {
-    captureImg.onload = () => resolve();
-    captureImg.onerror = () => reject(new Error(`failed to load ${path}`));
-    captureImg.src = convertFileSrc(path);
-  });
-
-  // The saved PNG carries physical pixels; divide by the device pixel ratio so
-  // a Retina capture is presented at its on-screen logical size.
-  const logicalW = captureImg.naturalWidth / window.devicePixelRatio;
-  const logicalH = captureImg.naturalHeight / window.devicePixelRatio;
-  const maxW = window.screen.availWidth * 0.92;
-  const maxH = window.screen.availHeight * 0.88 - HINT_BAR_HEIGHT;
-  const fit = Math.min(1, maxW / logicalW, maxH / logicalH);
-
-  await invoke("show_capture_window", {
-    width: Math.max(360, Math.round(logicalW * fit)),
-    height: Math.round(logicalH * fit) + HINT_BAR_HEIGHT,
-  });
-}
-
-async function copyAndReturn() {
-  if (!currentPath) return;
-  await invoke("copy_path_and_restore", { path: currentPath });
-}
-
-async function refreshShortcutBanner() {
+async function refreshShortcutBanner(): Promise<void> {
   const status = await invoke<AppStatus>("get_app_status");
   banner.classList.toggle("hidden", status.shortcutRegistered);
   if (!status.shortcutRegistered) {
@@ -72,7 +42,7 @@ async function refreshShortcutBanner() {
   }
 }
 
-async function runTestCapture() {
+async function runTestCapture(): Promise<void> {
   onboardingStatus.textContent = "테스트 캡처 실행 중…";
   try {
     const report = await invoke<TestCaptureReport>("run_test_capture");
@@ -85,10 +55,32 @@ async function runTestCapture() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  void listen<string>("capture-done", (event) => {
-    void presentCapture(event.payload).catch((e) => {
-      capturePath.textContent = String(e);
-    });
+  const canvas = document.querySelector<HTMLCanvasElement>("#annotation-canvas")!;
+  const canvasWrap = document.querySelector<HTMLElement>(".canvas-wrap")!;
+  const popover = document.querySelector<HTMLElement>("#note-popover")!;
+  const popoverTextarea = document.querySelector<HTMLTextAreaElement>("#note-textarea")!;
+  const contextInput = document.querySelector<HTMLInputElement>("#context-input")!;
+  const toolBtns = document.querySelectorAll<HTMLButtonElement>(".tool-btn");
+  const hintError = document.querySelector<HTMLElement>("#hint-error")!;
+
+  const annotator = new Annotator(
+    canvas,
+    canvasWrap,
+    popover,
+    popoverTextarea,
+    contextInput,
+    toolBtns,
+    hintError,
+  );
+
+  void listen<CaptureDonePayload>("capture-done", (event) => {
+    showView(captureView);
+    void annotator
+      .present(event.payload.path, event.payload.scale)
+      .catch((e) => {
+        showView(onboardingView);
+        onboardingStatus.textContent = `캡처 로드 실패: ${String(e)}`;
+      });
   });
 
   void listen<string>("capture-tcc-denied", () => {
@@ -109,12 +101,14 @@ window.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => void runTestCapture());
 
   window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      void invoke("dismiss_window");
-    } else if (e.key === "Enter" && e.metaKey) {
-      e.preventDefault();
-      void copyAndReturn();
+    if (captureView.classList.contains("hidden")) {
+      // Onboarding view: only handle Escape to dismiss
+      if (e.key === "Escape") {
+        e.preventDefault();
+        void invoke("dismiss_window");
+      }
+    } else {
+      annotator.onKeyDown(e);
     }
   });
 
