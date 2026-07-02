@@ -8,6 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **현재 상태: 설계 단계, 제품 코드 0줄.** 작업계획서는 `docs/plan.html`. 구현 전 반드시 그 문서를 먼저 읽을 것. Phase 0 포맷 검증은 완료(`docs/phase0-verification.md`, 마커 지목 9/9) — **CapNote v1 스펙은 동결됨**. 문법 변경은 v1.1 제안으로만.
 
+**다음 작업(Phase 1) 착수 시 `HANDOFF.md`를 먼저 읽을 것** — 진행 상태·착수 체크리스트·사용자 개입 지점이 정리돼 있다.
+
 ## 핵심 설계 불변식 (위반 금지 — 이 저장소에서 가장 중요한 규칙)
 
 1. **클립보드는 텍스트 전용.** 이미지를 클립보드에 넣는 코드를 작성하지 않는다. 번인된 PNG는 파일로 저장하고 절대 경로를 텍스트에 포함 → 에이전트가 Read 도구로 읽는다. (Claude Code의 이미지 붙여넣기는 macOS에서 Ctrl+V라는 함정. 텍스트는 ⌘V 한 번으로 시각+의미 채널 동시 도착)
@@ -39,8 +41,9 @@ dev 모드에서는 TCC "화면 기록" 권한이 터미널/IDE에 귀속되는 
 
 ## 문서 맵
 
+- `HANDOFF.md` — 세션 핸드오프 (현재 진행 상태 · 다음 작업 체크리스트, Phase 완료 시마다 갱신)
 - `README.md` — 제품 소개
-- `docs/plan.html` — 작업계획서 · 설계 근거 (Phase 0~4 로드맵, 리스크, 일정 산정 포함)
+- `docs/plan.html` — 작업계획서 · 설계 근거 (Phase 0~4 로드맵, 리스크, 일정 산정, 상단 진행 트래커 포함)
 - `docs/phase0-verification.md` — Phase 0 포맷 검증 리포트 (스펙 동결 근거)
 - `spike/phase0/` — 검증 픽스처·캡처·테스트 블록 (재현용)
 
