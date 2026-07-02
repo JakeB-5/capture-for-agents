@@ -6,9 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Capture for Agents** — AI 코딩 에이전트(터미널의 Claude Code 등)에게 시각적 피드백을 정확하게 전달하는 macOS 스크린샷 캡처+어노테이션 도구. 캡처 → 번호 마커/사각형/화살표 + 노트 → ⌘V 한 번으로 "정확히 어디를 어떻게" 전달. 포맷명: **CapNote v1**.
 
-**현재 상태: 설계 단계, 제품 코드 0줄.** 작업계획서는 `docs/plan.html`. 구현 전 반드시 그 문서를 먼저 읽을 것. Phase 0 포맷 검증은 완료(`docs/phase0-verification.md`, 마커 지목 9/9) — **CapNote v1 스펙은 동결됨**. 문법 변경은 v1.1 제안으로만.
+**현재 상태: Phase 1 워킹 스켈레톤 완료 (2026-07-02, 캡처→⌘V 루프 실기기 검증).** 작업계획서는 `docs/plan.html`. 구현 전 반드시 그 문서를 먼저 읽을 것. Phase 0 포맷 검증은 완료(`docs/phase0-verification.md`, 마커 지목 9/9) — **CapNote v1 스펙은 동결됨**. 문법 변경은 v1.1 제안으로만.
 
-**다음 작업(Phase 1) 착수 시 `HANDOFF.md`를 먼저 읽을 것** — 진행 상태·착수 체크리스트·사용자 개입 지점이 정리돼 있다.
+**다음 작업(Phase 2) 착수 시 `HANDOFF.md`를 먼저 읽을 것** — 진행 상태·착수 체크리스트·사용자 개입 지점이 정리돼 있다.
 
 ## 핵심 설계 불변식 (위반 금지 — 이 저장소에서 가장 중요한 규칙)
 
