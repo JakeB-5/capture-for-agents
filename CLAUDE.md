@@ -27,10 +27,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 빌드/개발 커맨드
 
-**아직 스캐폴드가 없다.** Phase 1에서 create-tauri-app으로 스캐폴드한 뒤 이 섹션을 실제 커맨드로 갱신할 것. 예정 커맨드(현재 동작하지 않음):
+- `pnpm install` — 의존성 설치
+- `pnpm tauri dev` — 개발 실행 (vite dev 서버 + Rust 빌드)
+- `pnpm tauri build` — 릴리스 번들
+- `pnpm check` — `tsc --noEmit`
+- `pnpm lint` — `eslint --quiet src`
+- `cargo check` (in `src-tauri/`) — Rust 컴파일 검증
 
-- `pnpm tauri dev` (예정)
-- `pnpm tauri build` (예정)
+구조: 프런트엔드 `src/`(vanilla TS + Vite), Rust 셸 `src-tauri/src/`(`lib.rs` 앱 셋업·커맨드, `capture.rs` screencapture 래퍼, `macos.rs` frontmost 복귀). Tauri 플러그인 버전은 Cargo.toml에 `=` 로 핀 — 업그레이드는 의도적으로만.
 
 dev 모드에서는 TCC "화면 기록" 권한이 터미널/IDE에 귀속되는 점에 주의.
 

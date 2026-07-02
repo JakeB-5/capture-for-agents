@@ -1,43 +1,46 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
+    <title>Capture for Agents</title>
     <script type="module" src="/src/main.ts" defer></script>
   </head>
 
   <body>
-    <main class="container">
-      <h1>Welcome to Tauri</h1>
+    <div id="banner" class="banner hidden"></div>
 
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img
-            src="/src/assets/tauri.svg"
-            class="logo tauri"
-            alt="Tauri logo"
-          />
-        </a>
-        <a href="https://www.typescriptlang.org/docs" target="_blank">
-          <img
-            src="/src/assets/typescript.svg"
-            class="logo typescript"
-            alt="typescript logo"
-          />
-        </a>
+    <!-- Capture preview: shown after a successful screencapture -->
+    <main id="capture-view" class="view hidden">
+      <div class="image-wrap">
+        <img id="capture-img" alt="captured screenshot" />
       </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
+      <footer class="hint-bar">
+        <span id="capture-path" class="path"></span>
+        <span class="keys"><kbd>⌘⏎</kbd> 경로 복사 후 돌아가기 · <kbd>Esc</kbd> 닫기</span>
+      </footer>
+    </main>
 
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
+    <!-- TCC onboarding: shown when screencapture fails with a permission error -->
+    <main id="onboarding-view" class="view hidden">
+      <h1>화면 기록 권한이 필요합니다</h1>
+      <p>
+        macOS가 화면 캡처를 차단했습니다. 시스템 설정에서
+        <strong>화면 기록</strong> 권한을 허용해 주세요.
+      </p>
+      <p class="small">
+        개발 모드에서는 권한이 이 앱이 아니라 <strong>터미널/IDE</strong>에
+        귀속됩니다 — 실행 중인 터미널 앱에 권한을 부여하세요.
+      </p>
+      <div class="row">
+        <button id="open-settings">시스템 설정 열기</button>
+        <button id="test-capture">테스트 캡처로 확인</button>
+      </div>
+      <p id="onboarding-status" class="status"></p>
+      <footer class="hint-bar">
+        <span class="keys"><kbd>Esc</kbd> 닫기</span>
+      </footer>
     </main>
   </body>
 </html>
