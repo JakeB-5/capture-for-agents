@@ -82,6 +82,7 @@
   <div class="meta">
     <span class="chip">설계 단계 v1</span>
     <span class="chip">작성일 2026-07-02</span>
+    <span class="chip" style="background:#ecfdf5;color:#059669;border-color:#a7f3d0">Phase 0 완료 · CapNote v1 동결</span>
   </div>
   <h1>Capture for Agents — 작업계획서</h1>
   <p class="subtitle">AI 코딩 에이전트에게 시각적 피드백을 정확하게 전달하는 macOS 스크린샷 캡처+어노테이션 도구 · 포맷명 <strong>CapNote v1</strong></p>
@@ -89,6 +90,67 @@
 </header>
 
 <main>
+
+<!-- ============================================================ 진행 현황 트래커
+     단계 상태가 바뀌면 함께 갱신할 것:
+     (1) 노드 원 색/내용(✓·P번호), (2) 트랙 라인의 초록 구간 끝 x좌표,
+     (3) "다음 작업" 배지의 x좌표, (4) 노드 아래 상태 줄, (5) 요약 칩, (6) 마지막 갱신 날짜 -->
+<section class="card" id="progress" style="border-top:4px solid #2563eb">
+  <h2 style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap">진행 현황
+    <span class="small" style="font-weight:400">마지막 갱신 2026-07-02</span></h2>
+  <p class="meta" style="margin:2px 0 12px">
+    <span class="chip" style="background:#ecfdf5;color:#059669;border-color:#a7f3d0;margin-bottom:4px">✅ 완료 — 설계·계획서, Phase 0 포맷 검증·스펙 동결 (마커 지목 9/9)</span>
+    <span class="chip" style="margin-bottom:4px">▶ 다음 — Phase 1 워킹 스켈레톤 (1~2 active-day)</span>
+    <span class="chip" style="background:#f8fafc;color:#6b7280;border-color:#e5e7eb;margin-bottom:4px">⏳ 남음 — Phase 1~3, 약 5~8 active-day</span>
+  </p>
+  <svg viewBox="0 0 880 140" role="img" aria-label="진행 현황 스텝퍼: 설계와 Phase 0 완료, 다음 작업은 Phase 1 워킹 스켈레톤, 이후 Phase 2 어노테이션, Phase 3 폴리싱, Phase 4 백로그">
+    <!-- track -->
+    <line x1="70" y1="52" x2="810" y2="52" stroke="#e5e7eb" stroke-width="4"/>
+    <line x1="70" y1="52" x2="218" y2="52" stroke="#059669" stroke-width="4"/>
+    <!-- next-step badge -->
+    <rect x="322" y="4" width="88" height="22" rx="11" fill="#2563eb"/>
+    <text x="366" y="19" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">다음 작업 ▶</text>
+    <line x1="366" y1="26" x2="366" y2="32" stroke="#2563eb" stroke-width="1.5"/>
+    <!-- node 1: 설계 (done) -->
+    <circle cx="70" cy="52" r="13" fill="#059669"/>
+    <text x="70" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">✓</text>
+    <text x="70" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">설계·계획서</text>
+    <text x="70" y="106" text-anchor="middle" font-size="12" fill="#4b5563">문서 3종 작성</text>
+    <text x="70" y="124" text-anchor="middle" font-size="11" fill="#059669">07-02 완료</text>
+    <!-- node 2: Phase 0 (done) -->
+    <circle cx="218" cy="52" r="13" fill="#059669"/>
+    <text x="218" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">✓</text>
+    <text x="218" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase 0</text>
+    <text x="218" y="106" text-anchor="middle" font-size="12" fill="#4b5563">포맷 검증·동결</text>
+    <text x="218" y="124" text-anchor="middle" font-size="11" fill="#059669">07-02 완료 · 9/9</text>
+    <!-- node 3: Phase 1 (next) -->
+    <circle cx="366" cy="52" r="18" fill="none" stroke="#bfdbfe" stroke-width="3"/>
+    <circle cx="366" cy="52" r="13" fill="#2563eb"/>
+    <text x="366" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">P1</text>
+    <text x="366" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase 1</text>
+    <text x="366" y="106" text-anchor="middle" font-size="12" fill="#4b5563">워킹 스켈레톤</text>
+    <text x="366" y="124" text-anchor="middle" font-size="11" font-weight="600" fill="#2563eb">다음 · 1~2d</text>
+    <!-- node 4: Phase 2 (pending) -->
+    <circle cx="514" cy="52" r="13" fill="#ffffff" stroke="#9ca3af" stroke-width="2"/>
+    <text x="514" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280">P2</text>
+    <text x="514" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase 2</text>
+    <text x="514" y="106" text-anchor="middle" font-size="12" fill="#4b5563">어노테이션+CapNote</text>
+    <text x="514" y="124" text-anchor="middle" font-size="11" fill="#9ca3af">대기 · 2~3d</text>
+    <!-- node 5: Phase 3 (pending) -->
+    <circle cx="662" cy="52" r="13" fill="#ffffff" stroke="#9ca3af" stroke-width="2"/>
+    <text x="662" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280">P3</text>
+    <text x="662" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase 3</text>
+    <text x="662" y="106" text-anchor="middle" font-size="12" fill="#4b5563">폴리싱·견고화</text>
+    <text x="662" y="124" text-anchor="middle" font-size="11" fill="#9ca3af">대기 · 2~3d</text>
+    <!-- node 6: Phase 4 (backlog) -->
+    <circle cx="810" cy="52" r="13" fill="#ffffff" stroke="#9ca3af" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="810" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280">P4</text>
+    <text x="810" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase 4</text>
+    <text x="810" y="106" text-anchor="middle" font-size="12" fill="#4b5563">백로그 (선택)</text>
+    <text x="810" y="124" text-anchor="middle" font-size="11" fill="#9ca3af">필요 실증 시</text>
+  </svg>
+  <p class="small" style="margin:10px 0 0">완료의 근거: Phase 0 검증 리포트는 <a href="phase0-verification.md">phase0-verification.md</a>, 단계별 상세 계획·완료 기준은 §8. 각 단계가 끝날 때마다 이 트래커를 갱신한다.</p>
+</section>
 
 <!-- ============================================================ 1 -->
 <section class="card" id="s1">
