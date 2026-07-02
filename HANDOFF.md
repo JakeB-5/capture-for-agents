@@ -19,7 +19,7 @@
   - `src/annotator.ts` — 캔버스 에디터 (포인터 제스처, 팝오버, 선택/삭제/언두, 커밋 파이프라인)
   - `src-tauri/src/lib.rs` — 커맨드 추가: `load_capture_png`(base64 로드), `save_annotated_png`(경로 검증+PNG 매직 체크), `copy_text_and_restore`(구 copy_path_and_restore 대체), `discard_capture`(ESC 취소). 시작 시 GC 스레드
   - `src-tauri/src/capture.rs` — PNG pHYs로 @2x 감지(`capture-done` 페이로드 `{path, scale}`), `gc_capnote_dir`(14일/500개), `is_capnote_png` 경로 가드
-- 커밋 흐름: `dev` ← `feature/phase2-annotation-capnote` `--no-ff` 머지 (구현 `10e521c` → taint 수정 `14bf1d1` → 문서). 원격 없음(로컬 전용).
+- 커밋 흐름: `dev` ← `feature/phase2-annotation-capnote` `--no-ff` 머지 완료(`7dfe09c`; 구현 `10e521c` → taint 수정 `14bf1d1` → 문서 `289199b`). 원격 없음(로컬 전용).
 - **Phase 2의 실측 발견 3건** (상세: `docs/phase2-verification.md` §3):
   1. **asset protocol은 캔버스를 taint시킴** — `convertFileSrc` 이미지는 교차 출처라 `toBlob()`이 SecurityError. 캡처 로드는 `load_capture_png` IPC(base64 → same-origin `data:` URL)로 교체했고 **asset protocol 설정·기능 플래그는 제거됨**. 이미지 픽셀을 읽는 코드를 추가할 때 asset protocol로 되돌아가지 말 것.
   2. **Claude Code가 붙여넣은 텍스트 속 이미지 경로를 자동으로 이미지 첨부로 치환** — `image:` 라인이 비어 보이는 게 정상(첨부 source가 그 경로). 시각 채널 자동 도착. 외부 가정(리스크 #8)으로 거동 변경 감시.
