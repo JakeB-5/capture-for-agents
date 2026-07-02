@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capture for Agents — 작업계획서 (설계 단계 v1)</title>
+<style>
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: #f1f5f9;
+    color: #1f2937;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  header.doc, main { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+  header.doc { padding-top: 44px; padding-bottom: 4px; }
+  h1 { font-size: 30px; line-height: 1.3; margin: 8px 0 6px; }
+  .subtitle { color: #4b5563; font-size: 16px; margin: 0 0 10px; }
+  .meta { color: #6b7280; font-size: 14px; }
+  .meta .chip {
+    display: inline-block; background: #eff6ff; color: #2563eb;
+    border: 1px solid #bfdbfe; border-radius: 999px;
+    padding: 1px 10px; font-size: 12px; font-weight: 600; margin-right: 6px;
+  }
+  main { padding-bottom: 90px; }
+  section.card {
+    background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 26px 32px; margin: 22px 0;
+  }
+  h2 { font-size: 22px; margin: 0 0 12px; line-height: 1.4; }
+  h3 { font-size: 17px; margin: 26px 0 8px; }
+  p { margin: 10px 0; }
+  ul, ol { margin: 8px 0; padding-left: 24px; }
+  li { margin: 4px 0; }
+  .eli {
+    background: #f0f9ff; border-left: 4px solid #2563eb;
+    border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 0 0 16px;
+    color: #0c4a6e; font-size: 15px;
+  }
+  .eli strong { color: #075985; }
+  .callout {
+    background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+    padding: 12px 16px; margin: 14px 0; font-size: 15px;
+  }
+  .callout.green { background: #ecfdf5; border-color: #a7f3d0; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 12px 0 4px; }
+  th, td { border: 1px solid #e5e7eb; padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: #f8fafc; font-weight: 600; white-space: nowrap; }
+  code, kbd {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+  }
+  code { background: #f3f4f6; border-radius: 4px; padding: 1px 5px; }
+  kbd {
+    background: #f9fafb; border: 1px solid #d1d5db; border-bottom-width: 2px;
+    border-radius: 4px; padding: 0 5px; white-space: nowrap;
+  }
+  pre {
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 16px 18px; overflow-x: auto; margin: 14px 0;
+  }
+  pre code { background: none; padding: 0; font-size: 13px; line-height: 1.6; display: block; }
+  figure { margin: 22px 0; }
+  figure svg {
+    width: 100%; height: auto; display: block;
+    background: #ffffff; border: 1px solid #f1f5f9; border-radius: 8px;
+  }
+  figcaption { font-size: 13px; color: #6b7280; margin-top: 8px; text-align: center; }
+  svg text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+  svg .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  ol.inv > li { margin: 8px 0; }
+  .small { font-size: 13px; color: #6b7280; }
+  footer { text-align: center; color: #9ca3af; font-size: 13px; padding: 10px 0 40px; }
+</style>
+</head>
+<body>
+
+<header class="doc">
+  <div class="meta">
+    <span class="chip">설계 단계 v1</span>
+    <span class="chip">작성일 2026-07-02</span>
+  </div>
+  <h1>Capture for Agents — 작업계획서</h1>
+  <p class="subtitle">AI 코딩 에이전트에게 시각적 피드백을 정확하게 전달하는 macOS 스크린샷 캡처+어노테이션 도구 · 포맷명 <strong>CapNote v1</strong></p>
+  <p class="meta">저장소 상태: 그린필드(코드 0줄) · 대상 플랫폼: macOS · 스택: Tauri v2 + TypeScript Canvas</p>
+</header>
+
+<main>
+
+<!-- ============================================================ 1 -->
+<section class="card" id="s1">
+  <h2>1. 이 문서는?</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 우리가 만들 도구의 "설계도"예요. 무엇을, 왜, 어떤 순서로 만들지 한 장에 다 담았어요.</p>
+  <p>이 문서는 <strong>Capture for Agents</strong>의 확정된 설계 브리프를 작업계획서 형태로 정리한 것이다. 아직 코드는 한 줄도 없다(그린필드). 그래서 지금이 가장 싸게 방향을 고칠 수 있는 시점이고, 이 문서가 그 기준점이 된다.</p>
+  <p>읽는 순서는 위에서 아래로: 무엇을 만들고(§2), 왜 필요한지(§3), 결과물이 에이전트에게 어떻게 전달되는지(§4~5), 사용자는 뭘 보게 되는지(§6), 무엇으로 만들지(§7), 어떤 순서로 며칠 만에 만들지(§8~9), 무엇이 위험한지(§10), 그리고 내일 당장 뭘 할지(§11).</p>
+  <p class="small">문서 언어 정책: 산문은 한국어, 코드·CLI 명령·포맷 키워드는 영어. 수치·경로·단축키(CapNote v1, ⌥⇧C, ~/.capnote/, 1568px, 14일/500개)는 모든 문서에서 동일하게 유지한다.</p>
+</section>
+
+<!-- ============================================================ 2 -->
+<section class="card" id="s2">
+  <h2>2. 무엇을 만드나</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 스크린샷에 번호 스티커를 붙여서 AI에게 "여기!"라고 알려주는 도구예요. 찍고, 콕 찍어 표시하고, 붙여넣기 한 번이면 끝.</p>
+  <p>터미널에서 일하는 AI 코딩 에이전트(Claude Code 등)는 "버튼이 좀 이상해요" 같은 말만으로는 화면의 <em>정확히 어디</em>가 문제인지 알기 어렵다. 이 도구는 화면을 캡처하고, 그 위에 번호 마커·사각형·화살표와 짧은 설명을 붙인 뒤, <kbd>⌘V</kbd> 한 번으로 에이전트에게 "정확히 어디를 어떻게 고칠지"를 전달한다.</p>
+  <p>목표 체감 속도: 마커 1개짜리 피드백 약 5초, 3개짜리 약 10초.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 270" role="img" aria-label="전체 사용 루프 다이어그램">
+      <defs>
+        <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <!-- Row 1 -->
+      <rect x="12" y="34" width="186" height="62" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="105" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">⌥⇧C</text>
+      <text x="105" y="80" text-anchor="middle" font-size="12" fill="#6b7280">전역 단축키 (설정 가능)</text>
+
+      <line x1="200" y1="65" x2="230" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="234" y="34" width="186" height="62" rx="8" fill="#f3f4f6" stroke="#6b7280"/>
+      <text x="327" y="60" text-anchor="middle" font-size="13" font-weight="600" class="mono" fill="#1f2937">screencapture -i</text>
+      <text x="327" y="80" text-anchor="middle" font-size="12" fill="#6b7280">영역 드래그 / 창 선택</text>
+
+      <line x1="422" y1="65" x2="452" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="456" y="34" width="186" height="62" rx="8" fill="#fffbeb" stroke="#d97706"/>
+      <text x="549" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">어노테이션 창</text>
+      <text x="549" y="80" text-anchor="middle" font-size="12" fill="#6b7280">클릭→타이핑→Enter 반복</text>
+
+      <line x1="644" y1="65" x2="674" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="678" y="34" width="188" height="62" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="772" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">⌘Enter</text>
+      <text x="772" y="80" text-anchor="middle" font-size="12" fill="#6b7280">원샷 커밋 (번인+저장+복사)</text>
+
+      <!-- elbow connector row1 -> row2 -->
+      <polyline points="772,96 772,128 105,128 105,158" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+      <text x="438" y="122" text-anchor="middle" font-size="12" fill="#6b7280">창 닫힘 → 직전 앱 포커스 자동 복귀</text>
+
+      <!-- Row 2 -->
+      <rect x="12" y="162" width="186" height="62" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="105" y="188" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">클립보드</text>
+      <text x="105" y="208" text-anchor="middle" font-size="12" fill="#6b7280">CapNote 텍스트만 (이미지 없음)</text>
+
+      <line x1="200" y1="193" x2="286" y2="193" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="290" y="162" width="186" height="62" rx="8" fill="#f3f4f6" stroke="#6b7280"/>
+      <text x="383" y="188" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">터미널에서 ⌘V</text>
+      <text x="383" y="208" text-anchor="middle" font-size="12" fill="#6b7280">사용자에게 남는 유일한 행동</text>
+
+      <line x1="478" y1="193" x2="562" y2="193" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="566" y="162" width="300" height="62" rx="8" fill="#ecfdf5" stroke="#059669"/>
+      <text x="716" y="188" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">에이전트</text>
+      <text x="716" y="208" text-anchor="middle" font-size="12" fill="#6b7280">텍스트를 파싱하고 이미지를 Read로 열람</text>
+    </svg>
+    <figcaption>그림 ① 전체 사용 루프 — 단축키 한 번에서 시작해, 사용자가 마지막에 하는 일은 터미널에서 ⌘V 하나뿐이다.</figcaption>
+  </figure>
+
+  <h3>핵심 설계 불변식 5개</h3>
+  <p>아래 다섯 문장은 이 프로젝트의 "절대 규칙"이다. 모든 설계·구현·문서가 이것과 모순되면 안 된다.</p>
+  <ol class="inv">
+    <li><strong>클립보드는 텍스트 전용.</strong> 이미지는 클립보드에 넣지 않는다. 번인된 PNG는 파일로 저장하고 절대 경로를 텍스트에 포함 → 에이전트가 Read 도구로 직접 읽는다.</li>
+    <li><strong>좌표계는 단 하나:</strong> "저장된 최종 이미지의 픽셀"(원점 좌상단). 헤더에 <code>size</code>(실측 WxH)를 선언하고, 원본 Retina 좌표는 절대 노출하지 않는다.</li>
+    <li><strong>이미지는 장변 ≤ 1568px PNG.</strong> Retina @2x는 1/2로 축소, 이미 작은 크롭은 네이티브 유지. JPEG 금지, 업스케일 금지.</li>
+    <li><strong>번인(burn-in)은 필수,</strong> 단 다운스케일 후 최종 해상도에서 렌더링. 번호 배지는 대상을 가리지 않게 8~12px 오프셋+리더 라인. 노트 본문은 번인하지 않는다.</li>
+    <li><strong>마커·사각형·화살표가 하나의 자동 증가 번호 시퀀스를 공유.</strong> 이 번호가 이미지와 텍스트를 잇는 join key다.</li>
+  </ol>
+</section>
+
+<!-- ============================================================ 3 -->
+<section class="card" id="s3">
+  <h2>3. 왜 필요한가 — Figma 스토리</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 말로 "저기 좀 이상해"라고 하면 아무도 못 알아들어요. 사진에 동그라미 치고 번호를 붙여서 "1번은 이것, 2번은 저것"이라고 해야 정확히 전달돼요.</p>
+  <p>대표 시나리오는 이렇다. Figma 시안을 코드로 옮겼는데, 눈으로 비교해 보니 디테일이 미반영됐다 — 카드에 1px 보더가 빠졌고, 마진이 절반이고, 아이콘이 작다. 이런 것을 말로 설명하면 에이전트는 "어떤 카드? 어느 방향 마진?"부터 헤맨다. 이 도구로는 캡처 → 번호 마커/사각형/화살표 + 한 줄 설명 → <kbd>⌘V</kbd>, 이 세 걸음이면 "정확히 어디를 어떻게"가 전달된다.</p>
+
+  <h3>왜 이미지를 클립보드에 안 넣나 (불변식 1의 근거)</h3>
+  <p>여기에 함정이 하나 있다. Claude Code에서 이미지 붙여넣기는 macOS에서 <kbd>⌘V</kbd>가 아니라 <kbd>Ctrl+V</kbd>다. 사용자가 습관대로 <kbd>⌘V</kbd>를 누르면 이미지는 조용히 사라진다. 게다가 이미지만 붙여넣으면 "이 그림으로 뭘 하라는 건지"라는 의미 정보가 없다.</p>
+  <p>그래서 클립보드에는 <strong>텍스트만</strong> 넣는다. 텍스트 안에 이미지 파일의 절대 경로가 들어 있으므로, <kbd>⌘V</kbd> 한 번으로 시각 채널(에이전트가 경로를 Read)과 의미 채널(번호·좌표·노트)이 <em>동시에</em> 도착한다. 붙여넣기 방식의 함정을 아예 우회하는 설계다.</p>
+</section>
+
+<!-- ============================================================ 4 -->
+<section class="card" id="s4">
+  <h2>4. 어떻게 전달되나 — CapNote v1</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 편지 한 통에 "사진이 보관된 위치"와 "사진 속 번호별 설명"을 같이 적어 보내는 방식이에요. 받는 쪽은 편지를 읽고, 적힌 위치에서 사진을 꺼내 보고, 번호로 둘을 맞춰 봐요.</p>
+  <p><strong>CapNote v1</strong>은 클립보드에 실리는 페이로드 포맷이다. <code>```capnote v1</code> 펜스로 감싼 UTF-8 플레인 텍스트로, 정규식 한 줄로 기계 파싱이 가능하면서 사람이 그대로 읽힌다. 비전(이미지 인식)이 없는 모델도 좌표+노트만으로 동작할 수 있다.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 340" role="img" aria-label="CapNote 이중 채널 구조">
+      <defs>
+        <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <!-- left: one paste -->
+      <rect x="20" y="135" width="150" height="72" rx="8" fill="#f3f4f6" stroke="#6b7280"/>
+      <text x="95" y="163" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">⌘V 한 번</text>
+      <text x="95" y="185" text-anchor="middle" font-size="12" fill="#6b7280">텍스트 한 덩어리</text>
+
+      <!-- split lines -->
+      <line x1="170" y1="160" x2="246" y2="95" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr3)"/>
+      <line x1="170" y1="182" x2="246" y2="245" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+      <!-- visual channel -->
+      <rect x="250" y="40" width="315" height="108" rx="8" fill="#fffbeb" stroke="#d97706"/>
+      <text x="266" y="66" font-size="14" font-weight="600" fill="#1f2937">시각 채널 — 번인된 PNG 파일</text>
+      <text x="266" y="88" font-size="12" class="mono" fill="#6b7280">~/.capnote/2026-07-02-164812.png</text>
+      <text x="266" y="108" font-size="12" fill="#6b7280">텍스트 속 경로를 보고 Read 도구로 열람</text>
+      <circle cx="278" cy="128" r="9" fill="#d97706"/>
+      <text x="278" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">1</text>
+      <circle cx="302" cy="128" r="9" fill="#d97706"/>
+      <text x="302" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">2</text>
+      <text x="320" y="132" font-size="12" fill="#6b7280">번호 배지가 이미지에 새겨져 있음</text>
+
+      <!-- semantic channel -->
+      <rect x="250" y="192" width="315" height="108" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="266" y="218" font-size="14" font-weight="600" fill="#1f2937">의미 채널 — CapNote 텍스트</text>
+      <text x="266" y="240" font-size="12" class="mono" fill="#6b7280">[n] point/rect/arrow + (x,y) 좌표</text>
+      <text x="266" y="260" font-size="12" fill="#6b7280">번호별 노트(무엇이 문제고 어떻게 고칠지)</text>
+      <text x="266" y="280" font-size="12" fill="#6b7280">클립보드로 즉시 도착 — 정규식으로 파싱 가능</text>
+
+      <!-- join -->
+      <line x1="565" y1="94" x2="656" y2="158" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr3)"/>
+      <line x1="565" y1="246" x2="656" y2="184" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr3)"/>
+      <rect x="612" y="156" width="34" height="28" rx="6" fill="#ffffff" stroke="#059669"/>
+      <text x="629" y="175" text-anchor="middle" font-size="12" font-weight="700" fill="#059669">[n]</text>
+      <text x="629" y="205" text-anchor="middle" font-size="11" fill="#059669">번호 = join key</text>
+
+      <!-- agent -->
+      <rect x="672" y="115" width="190" height="112" rx="8" fill="#ecfdf5" stroke="#059669"/>
+      <text x="767" y="145" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">에이전트</text>
+      <text x="767" y="170" text-anchor="middle" font-size="12" fill="#6b7280">두 채널을 번호로 결합</text>
+      <text x="767" y="190" text-anchor="middle" font-size="12" fill="#6b7280">좌표 해석 정밀도에</text>
+      <text x="767" y="208" text-anchor="middle" font-size="12" fill="#6b7280">덜 의존 (이중 앵커링)</text>
+    </svg>
+    <figcaption>그림 ② CapNote 이중 채널 — 하나의 ⌘V가 시각 채널(PNG)과 의미 채널(텍스트)로 갈라졌다가, 에이전트 안에서 번호 [n]으로 다시 만난다.</figcaption>
+  </figure>
+
+  <h3>표준 예시</h3>
+  <p>아래 블록이 <kbd>⌘Enter</kbd> 시점에 클립보드에 실리는 전체 페이로드다.</p>
+  <pre><code>```capnote v1
+image: /Users/jin/.capnote/2026-07-02-164812.png
+size: 1246x820
+source: region capture @2x, downscaled 1/2 (2026-07-02 16:48)
+context: Figma 시안 대비 카드 컴포넌트 디테일 미반영 3건
+[1] rect (288,120)-(456,214)
+    카드에 1px solid #E5E7EB 보더가 빠져 있음. Figma에는 있는데 구현에 없음.
+[2] arrow (524,412)-&gt;(524,468)
+    카드와 하단 버튼 사이 마진이 시안은 24px인데 구현은 12px. 24px로 수정.
+[3] point (1108,96)
+    이 아이콘이 시안 기준 20x20인데 지금 16x16으로 렌더링됨.
+hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left), not CSS px.
+```</code></pre>
+
+  <h3>문법 표</h3>
+  <table>
+    <thead>
+      <tr><th>요소</th><th>문법</th><th>설명</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>펜스</td><td><code>```capnote v1</code> … <code>```</code></td><td>페이로드 전체를 감싸는 코드 펜스. 포맷 식별자를 겸한다.</td></tr>
+      <tr><td>image</td><td><code>image: /절대/경로.png</code></td><td>번인된 PNG의 절대 경로. 에이전트가 Read로 여는 대상. (필수)</td></tr>
+      <tr><td>size</td><td><code>size: WxH</code></td><td>저장본의 실측 크기. <strong>이 크기가 곧 좌표 공간이다.</strong> (필수)</td></tr>
+      <tr><td>source</td><td><code>source: …</code></td><td>캡처 출처·스케일 메타 (선택).</td></tr>
+      <tr><td>context</td><td><code>context: …</code></td><td>전체 상황 한 줄 요약 (선택).</td></tr>
+      <tr><td>번호 마커</td><td><code>[n] point (x,y)</code></td><td>점 하나를 지목.</td></tr>
+      <tr><td>사각형</td><td><code>[n] rect (x1,y1)-(x2,y2)</code></td><td>영역을 지목. 좌상단-우하단.</td></tr>
+      <tr><td>화살표</td><td><code>[n] arrow (x1,y1)-&gt;(x2,y2)</code></td><td>방향을 지목. 꼬리-&gt;머리 순서.</td></tr>
+      <tr><td>노트</td><td>마커 라인 다음 줄, 4칸 들여쓰기</td><td>자유 텍스트, 멀티라인 허용 (선택). 번인되지 않고 텍스트 채널이 담당.</td></tr>
+      <tr><td>hint</td><td><code>hint: …</code></td><td>마지막 줄. 에이전트 행동 지시 1줄 (영어).</td></tr>
+    </tbody>
+  </table>
+  <p class="small">번호 <code>[n]</code>은 도구 종류와 무관하게 하나의 자동 증가 시퀀스를 공유한다(불변식 5). 삭제 시 번호는 자동 재정렬된다.</p>
+</section>
+
+<!-- ============================================================ 5 -->
+<section class="card" id="s5">
+  <h2>5. 이미지·좌표 정책</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 지도를 반으로 줄였으면 보물 위치도 줄인 지도 기준으로 적어야 해요. 우리는 헷갈리지 않게, 처음부터 "줄인 지도" 하나에만 좌표를 적어요.</p>
+  <p>Retina 디스플레이는 화면 1포인트를 물리 픽셀 2개(@2x)로 그린다. 캡처 원본은 2배로 크고, 여기 좌표와 저장본 좌표가 섞이면 마커가 엉뚱한 곳을 가리킨다. 그래서 좌표계는 단 하나 — <strong>저장된 최종 이미지의 픽셀</strong>(원점 좌상단)만 쓴다(불변식 2).</p>
+  <p>또 하나의 근거: Anthropic 비전 API는 장변이 1568px를 넘는 이미지를 자체적으로 리사이즈한다. 저장본을 처음부터 장변 ≤ 1568px로 맞추면 API가 이미지를 건드리지 않으므로, <strong>모델이 실제로 보는 픽셀과 텍스트에 적힌 좌표 공간이 정확히 1:1</strong>이 된다(불변식 3).</p>
+
+  <figure>
+    <svg viewBox="0 0 880 330" role="img" aria-label="좌표계와 다운스케일 정책">
+      <defs>
+        <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <!-- original -->
+      <text x="180" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Retina @2x 원본 — 2492x1640</text>
+      <rect x="30" y="68" width="300" height="197" fill="#eff6ff" stroke="#2563eb"/>
+      <circle cx="99" cy="97" r="4" fill="#9ca3af"/>
+      <text x="110" y="93" font-size="11" fill="#9ca3af">(576,240) @2x</text>
+      <text x="110" y="107" font-size="11" fill="#9ca3af">이 좌표는 어디에도 노출 안 함</text>
+      <text x="180" y="248" text-anchor="middle" font-size="12" fill="#6b7280">화면의 물리 픽셀 그대로</text>
+
+      <!-- arrow 1 -->
+      <line x1="334" y1="166" x2="424" y2="166" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr4)"/>
+      <text x="379" y="146" text-anchor="middle" font-size="11" fill="#6b7280">÷2 다운스케일</text>
+      <text x="379" y="160" text-anchor="middle" font-size="11" fill="#6b7280">→ 이 해상도에서 번인</text>
+
+      <!-- saved -->
+      <text x="505" y="112" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">저장본 1246x820</text>
+      <text x="505" y="128" text-anchor="middle" font-size="11" fill="#6b7280">장변 ≤ 1568px · PNG</text>
+      <rect x="430" y="138" width="150" height="99" fill="#ecfdf5" stroke="#059669"/>
+      <circle cx="465" cy="152" r="4" fill="#d97706"/>
+      <text x="474" y="156" font-size="11" fill="#b45309">[1] (288,120)</text>
+      <text x="505" y="252" text-anchor="middle" font-size="11" fill="#6b7280">size: 1246x820 = 좌표 공간</text>
+
+      <!-- arrow 2 -->
+      <line x1="584" y1="166" x2="674" y2="166" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr4)"/>
+      <text x="629" y="146" text-anchor="middle" font-size="11" fill="#6b7280">1568 이하이므로</text>
+      <text x="629" y="160" text-anchor="middle" font-size="11" fill="#6b7280">API가 리사이즈 안 함</text>
+
+      <!-- model view -->
+      <text x="755" y="112" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">모델이 보는 픽셀</text>
+      <text x="755" y="128" text-anchor="middle" font-size="11" fill="#6b7280">그대로 1246x820</text>
+      <rect x="680" y="138" width="150" height="99" fill="#fffbeb" stroke="#d97706"/>
+      <circle cx="715" cy="152" r="4" fill="#d97706"/>
+      <text x="724" y="156" font-size="11" fill="#b45309">[1] (288,120)</text>
+
+      <text x="440" y="292" text-anchor="middle" font-size="13" font-weight="600" fill="#059669">텍스트 좌표 (288,120) = 저장본 픽셀 = 모델이 보는 픽셀 — 정확히 1:1</text>
+      <text x="440" y="314" text-anchor="middle" font-size="12" fill="#6b7280">이미 작은 크롭은 @2x 네이티브 유지 · 업스케일 금지 · JPEG 금지 (1px 디테일이 아티팩트로 뭉개짐)</text>
+    </svg>
+    <figcaption>그림 ③ 좌표계·다운스케일 정책 — 원본 2492x1640을 1/2로 줄여 1246x820으로 저장하면, 모델이 보는 픽셀과 텍스트 좌표가 1:1이 된다.</figcaption>
+  </figure>
+
+  <h3>번인 규칙 (불변식 4)</h3>
+  <ul>
+    <li>번인은 <strong>다운스케일 후 최종 해상도에서</strong> 렌더링한다. 먼저 그리고 줄이면 배지가 흐려진다.</li>
+    <li>번호 배지는 대상 픽셀을 가리지 않게 <strong>8~12px 오프셋 + 리더 라인</strong>으로 배치한다.</li>
+    <li>노트 본문 텍스트는 이미지에 번인하지 않는다 — 그건 텍스트 채널의 일이다. 이미지에는 번호와 도형만 남긴다.</li>
+  </ul>
+
+  <h3>저장과 보존</h3>
+  <ul>
+    <li>저장 위치: <code>~/.capnote/YYYY-MM-DD-HHMMSS.png</code>. 경로는 설정 가능 — 샌드박스 에이전트가 홈 밖 경로를 못 읽는 경우에 대비한다.</li>
+    <li>자동 정리(GC): 앱 시작 시 <strong>14일 경과 또는 500개 초과분</strong>을 삭제한다.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ 6 -->
+<section class="card" id="s6">
+  <h2>6. 어노테이션 창 설계</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 사진을 찍자마자 열리는 창에서 "콕 찍고 → 한 줄 쓰고 → Enter" — 이 세 동작만 반복하면 끝나요. 도구를 고르러 마우스를 옮길 필요가 없어요.</p>
+  <p>캡처 직후 어노테이션 창이 즉시 열린다(always-on-top, 이미지 크기). 핵심은 <strong>"클릭→타이핑→Enter" 단일 루프</strong>다: 어노테이션을 놓는 순간 인라인 노트 입력이 자동 포커스되고, 타이핑 후 <kbd>Enter</kbd>로 확정하면(빈 채로 Enter = 노트 생략) 캔버스로 복귀해 바로 다음 클릭이 가능하다.</p>
+  <p><strong>스마트 툴</strong>이 기본 도구다: 클릭은 번호 마커, 4px 이상 드래그는 사각형, <kbd>Shift</kbd>+드래그(또는 <kbd>A</kbd>)는 화살표로 자동 판별된다. <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd> 키로 명시적 도구 전환도 가능하다.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 600" role="img" aria-label="어노테이션 창 UI 목업">
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#d97706"/>
+        </marker>
+      </defs>
+      <!-- window frame -->
+      <rect x="50" y="16" width="780" height="548" rx="10" fill="#ffffff" stroke="#d1d5db"/>
+      <!-- title bar -->
+      <rect x="51" y="17" width="778" height="35" rx="9" fill="#f3f4f6"/>
+      <line x1="51" y1="52" x2="829" y2="52" stroke="#d1d5db"/>
+      <circle cx="72" cy="34" r="6" fill="#f87171"/>
+      <circle cx="92" cy="34" r="6" fill="#fbbf24"/>
+      <circle cx="112" cy="34" r="6" fill="#34d399"/>
+      <text x="450" y="39" text-anchor="middle" font-size="13" fill="#6b7280">Capture for Agents — 2026-07-02-164812.png (always-on-top)</text>
+
+      <!-- canvas: mock screenshot -->
+      <rect x="51" y="53" width="778" height="452" fill="#fafafa"/>
+      <rect x="90" y="78" width="700" height="40" rx="6" fill="#e0e7ff"/>
+      <rect x="106" y="92" width="90" height="12" rx="3" fill="#a5b4fc"/>
+      <!-- small icon (target of [3]) -->
+      <rect x="744" y="90" width="16" height="16" rx="3" fill="#94a3b8"/>
+
+      <!-- card (target of [1]) -->
+      <rect x="180" y="170" width="220" height="140" rx="6" fill="#ffffff" stroke="#eeeeee"/>
+      <rect x="196" y="186" width="80" height="60" rx="4" fill="#e5e7eb"/>
+      <rect x="196" y="258" width="180" height="9" rx="3" fill="#e5e7eb"/>
+      <rect x="196" y="274" width="132" height="9" rx="3" fill="#e5e7eb"/>
+      <!-- button (target of [2]) -->
+      <rect x="180" y="360" width="120" height="36" rx="6" fill="#3b82f6"/>
+      <text x="240" y="383" text-anchor="middle" font-size="12" fill="#ffffff">Buy now</text>
+
+      <!-- annotation [1]: rect around card -->
+      <rect x="172" y="162" width="236" height="156" fill="none" stroke="#d97706" stroke-width="2"/>
+      <line x1="158" y1="148" x2="174" y2="164" stroke="#d97706" stroke-width="1.5"/>
+      <circle cx="150" cy="140" r="12" fill="#d97706"/>
+      <text x="150" y="145" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">1</text>
+
+      <!-- annotation [2]: arrow between card and button -->
+      <line x1="240" y1="322" x2="240" y2="354" stroke="#d97706" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="219" y1="338" x2="234" y2="338" stroke="#d97706" stroke-width="1.5"/>
+      <circle cx="207" cy="338" r="12" fill="#d97706"/>
+      <text x="207" y="343" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">2</text>
+
+      <!-- annotation [3]: point on icon -->
+      <circle cx="752" cy="98" r="5" fill="#d97706"/>
+      <circle cx="752" cy="98" r="10" fill="none" stroke="#d97706" stroke-width="1.5"/>
+      <line x1="731" y1="79" x2="744" y2="90" stroke="#d97706" stroke-width="1.5"/>
+      <circle cx="723" cy="72" r="12" fill="#d97706"/>
+      <text x="723" y="77" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">3</text>
+
+      <!-- inline note popover for [2] -->
+      <path d="M290,338 L302,331 L302,345 z" fill="#ffffff" stroke="#d97706"/>
+      <rect x="301" y="308" width="356" height="62" rx="8" fill="#ffffff" stroke="#d97706"/>
+      <text x="317" y="333" font-size="13" fill="#1f2937">카드와 버튼 사이 마진 12px → 24px로 수정</text>
+      <rect x="317" y="342" width="2" height="16" fill="#2563eb"/>
+      <text x="326" y="356" font-size="11" fill="#9ca3af">Enter = 확정 · 빈 채로 Enter = 노트 생략</text>
+
+      <!-- hint bar -->
+      <line x1="51" y1="505" x2="829" y2="505" stroke="#e5e7eb"/>
+      <rect x="51" y="506" width="778" height="57" fill="#f8fafc"/>
+      <text x="440" y="530" text-anchor="middle" font-size="12" fill="#6b7280">클릭 = 마커 · 드래그 = 사각형 · Shift+드래그 = 화살표 · 1/2/3 = 도구 전환</text>
+      <text x="440" y="550" text-anchor="middle" font-size="12" fill="#6b7280">⌘Enter = 복사하고 닫기 · ⌘Z = 언두 · ⌫ = 삭제 · ESC = 취소</text>
+
+      <!-- toast -->
+      <rect x="574" y="440" width="236" height="40" rx="8" fill="#1f2937" opacity="0.9"/>
+      <text x="692" y="465" text-anchor="middle" font-size="12" fill="#ffffff">Copied — ⌘V into Claude Code</text>
+    </svg>
+    <figcaption>그림 ④ 어노테이션 창 목업 — 번호 배지 ①②③(오프셋+리더 라인), 사각형·화살표·점 마커, [2] 옆에 열린 인라인 노트 팝오버, 하단 단축키 힌트 바.</figcaption>
+  </figure>
+
+  <h3>단축키 표</h3>
+  <table>
+    <thead>
+      <tr><th>키</th><th>동작</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><kbd>⌥⇧C</kbd></td><td>전역 캡처 시작 (설정 가능). 등록 실패 시 대체 키 제안 + 트레이 메뉴 폴백.</td></tr>
+      <tr><td>클릭</td><td>번호 마커 (point)</td></tr>
+      <tr><td>4px 이상 드래그</td><td>사각형 (rect)</td></tr>
+      <tr><td><kbd>Shift</kbd>+드래그 또는 <kbd>A</kbd></td><td>화살표 (arrow, 꼬리→머리)</td></tr>
+      <tr><td><kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd></td><td>도구 명시 전환 (마커/사각형/화살표)</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>인라인 노트 확정 (빈 채로 Enter = 노트 생략) → 캔버스 복귀</td></tr>
+      <tr><td><kbd>⌘Enter</kbd> 또는 <kbd>⌘C</kbd></td><td>원샷 커밋: 번인 렌더 → 다운스케일 → PNG 저장 → CapNote 텍스트 클립보드 → 창 닫힘 → 직전 앱 포커스 복귀 → 토스트</td></tr>
+      <tr><td><kbd>⌘Z</kbd></td><td>언두</td></tr>
+      <tr><td><kbd>⌫</kbd></td><td>선택 삭제 (번호 자동 재정렬)</td></tr>
+      <tr><td><kbd>ESC</kbd></td><td>전체 취소 (창 닫기, 아무것도 저장 안 함)</td></tr>
+    </tbody>
+  </table>
+  <p class="small">포커스 복귀: 캡처 직전의 frontmost 앱을 기억해 두었다가, 복사 완료 시 창을 닫고 명시적으로 재활성화한다. 사용자에게 남는 행동은 터미널에서 ⌘V 하나다.</p>
+</section>
+
+<!-- ============================================================ 7 -->
+<section class="card" id="s7">
+  <h2>7. 기술 선택</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 이미 macOS 안에 들어 있는 부품(스크린샷 명령어)을 최대한 빌려 쓰고, 우리는 그 위에 얇은 껍데기와 그림 그리는 화면만 만들어요. 바퀴를 다시 발명하지 않아요.</p>
+  <p>스택은 <strong>Tauri v2 메뉴바 상주 앱</strong>이다. 제품의 95%인 어노테이션 UI는 TypeScript + Canvas 2D로 만들고, Rust는 얇은 셸에 그친다 — 공식 플러그인(global-shortcut, clipboard-manager)과 <code>screencapture</code> 프로세스 스폰 수십 줄. 결과: 바이너리 ~10MB, 상주 메모리 ~30MB, 콜드 스타트 없음.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 460" role="img" aria-label="시스템 아키텍처">
+      <defs>
+        <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <!-- app container -->
+      <rect x="30" y="30" width="540" height="264" rx="10" fill="#f8fafc" stroke="#94a3b8"/>
+      <text x="300" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Capture for Agents.app — Tauri v2 (바이너리 ~10MB · 상주 ~30MB)</text>
+
+      <!-- rust shell -->
+      <rect x="50" y="74" width="240" height="200" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="170" y="100" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Rust 얇은 셸</text>
+      <text x="66" y="126" font-size="12" fill="#374151">· 트레이(메뉴바) 상주</text>
+      <text x="66" y="148" font-size="12" fill="#374151">· global-shortcut (⌥⇧C)</text>
+      <text x="66" y="170" font-size="12" fill="#374151">· clipboard-manager (텍스트 전용)</text>
+      <text x="66" y="192" font-size="12" fill="#374151">· screencapture 프로세스 스폰</text>
+      <text x="66" y="214" font-size="12" fill="#374151">· frontmost 앱 기억·복귀</text>
+      <text x="66" y="236" font-size="12" fill="#374151">· TCC 온보딩 (픽셀 검증)</text>
+
+      <!-- ts annotator -->
+      <rect x="310" y="74" width="240" height="200" rx="8" fill="#fffbeb" stroke="#d97706"/>
+      <text x="430" y="100" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">TS + Canvas 2D 어노테이터</text>
+      <text x="430" y="118" text-anchor="middle" font-size="11" fill="#6b7280">(제품의 95%)</text>
+      <text x="326" y="144" font-size="12" fill="#374151">· 스마트 툴 3종 + 번호 시퀀스</text>
+      <text x="326" y="166" font-size="12" fill="#374151">· 인라인 노트 팝오버</text>
+      <text x="326" y="188" font-size="12" fill="#374151">· 번인 렌더러 (배지 오프셋+리더)</text>
+      <text x="326" y="210" font-size="12" fill="#374151">· 1568px 다운스케일 파이프라인</text>
+      <text x="326" y="232" font-size="12" fill="#374151">· CapNote v1 인코더</text>
+
+      <!-- screencapture -->
+      <rect x="30" y="370" width="250" height="66" rx="8" fill="#f3f4f6" stroke="#6b7280"/>
+      <text x="155" y="396" text-anchor="middle" font-size="13" font-weight="600" class="mono" fill="#1f2937">/usr/sbin/screencapture</text>
+      <text x="155" y="418" text-anchor="middle" font-size="11" class="mono" fill="#6b7280">-i -x -o -t png &lt;tmpfile&gt;</text>
+
+      <!-- storage -->
+      <rect x="330" y="370" width="230" height="66" rx="8" fill="#ecfdf5" stroke="#059669"/>
+      <text x="445" y="396" text-anchor="middle" font-size="13" font-weight="600" class="mono" fill="#1f2937">~/.capnote/</text>
+      <text x="445" y="418" text-anchor="middle" font-size="11" fill="#6b7280">YYYY-MM-DD-HHMMSS.png · 14일/500개 GC</text>
+
+      <!-- terminal -->
+      <rect x="650" y="90" width="210" height="184" rx="8" fill="#ecfdf5" stroke="#059669"/>
+      <text x="755" y="118" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">터미널의 Claude Code</text>
+      <text x="666" y="146" font-size="12" fill="#374151">· ⌘V로 CapNote 텍스트 수신</text>
+      <text x="666" y="168" font-size="12" fill="#374151">· image: 경로를 Read로 열람</text>
+      <text x="666" y="190" font-size="12" fill="#374151">· [n] 번호로 두 채널 조인</text>
+      <text x="666" y="212" font-size="12" fill="#374151">· 지목된 위치의 코드 수정</text>
+
+      <!-- arrows -->
+      <line x1="140" y1="274" x2="140" y2="366" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+      <text x="134" y="308" text-anchor="end" font-size="11" fill="#6b7280">스폰</text>
+      <text x="134" y="324" text-anchor="end" font-size="11" fill="#6b7280">(드래그/창 선택은</text>
+      <text x="134" y="340" text-anchor="end" font-size="11" fill="#6b7280">-i가 제공)</text>
+
+      <line x1="230" y1="366" x2="392" y2="278" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+      <text x="330" y="338" text-anchor="middle" font-size="11" fill="#6b7280">임시 PNG (ESC = 파일 미생성)</text>
+
+      <line x1="470" y1="274" x2="470" y2="366" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+      <text x="478" y="326" font-size="11" fill="#6b7280">번인 PNG 저장</text>
+
+      <line x1="570" y1="160" x2="646" y2="160" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+      <text x="608" y="146" text-anchor="middle" font-size="11" fill="#6b7280">클립보드 → ⌘V</text>
+
+      <polyline points="560,403 755,403 755,278" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+      <text x="768" y="348" font-size="11" fill="#6b7280">Read 도구로 열람</text>
+    </svg>
+    <figcaption>그림 ⑤ 아키텍처 — Rust는 OS 연결부만 담당하는 얇은 셸이고, 제품의 실체는 웹뷰 안의 TypeScript Canvas 어노테이터다.</figcaption>
+  </figure>
+
+  <h3>캡처 방식: 자체 오버레이 대신 OS 내장 명령</h3>
+  <p><code>/usr/sbin/screencapture -i -x -o -t png &lt;tmpfile&gt;</code>을 스폰한다. <code>-i</code>가 드래그 선택 + <kbd>Space</kbd> 키 창 선택 토글 + <kbd>ESC</kbd> 취소(파일 미생성으로 감지)를 공짜로 제공하므로 자체 캡처 오버레이가 필요 없다. <code>-x</code>는 셔터음 제거, <code>-o</code>는 창 그림자 제거이고, <code>-J window</code>로 창 모드 시작 변형도 가능하다.</p>
+
+  <h3>스택 비교</h3>
+  <table>
+    <thead>
+      <tr><th>기준</th><th>Tauri v2 (채택)</th><th>Electron (탈출로)</th><th>Swift 네이티브 (기각)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>바이너리 / 메모리</td><td>~10MB / ~30MB</td><td>수백 MB급 / 무거움</td><td>최소</td></tr>
+      <tr><td>주 개발 언어</td><td>TS + 얇은 Rust</td><td>TS</td><td>Swift</td></tr>
+      <tr><td>어노테이터 재사용</td><td>웹뷰 UI + CLI 셸아웃</td><td>동일 아키텍처, 1:1 이식</td><td>전면 재작성 필요</td></tr>
+      <tr><td>핵심 리스크</td><td>플러그인 엣지 케이스</td><td>덩치·상주 비용</td><td>1인 TS 개발자를 주력 언어 밖으로 밀어냄</td></tr>
+      <tr><td>판정</td><td>기본 선택</td><td>사전 정의된 폴백</td><td>기각</td></tr>
+    </tbody>
+  </table>
+  <div class="callout"><strong>탈출 조건(사전 정의):</strong> Tauri 플러그인 엣지 케이스로 <strong>2 active-day 이상</strong> 소모되면 Electron으로 전환한다. 아키텍처가 "웹뷰 UI + CLI 셸아웃"이라 어노테이터·포맷·파이프라인이 1:1 호환되므로 전환 비용이 작다.</div>
+
+  <h3>권한 — TCC(macOS의 개인정보 보호 권한 시스템) "화면 기록"</h3>
+  <ul>
+    <li>최초 1회 승인 필요. 온보딩에서 <strong>테스트 캡처의 픽셀 검증</strong>을 수행한다 — 미승인 상태에서는 창이 누락된 이미지가 <em>조용히</em> 반환될 수 있기 때문.</li>
+    <li>dev 모드에서는 권한이 터미널/IDE에 귀속되는 점에 주의. macOS 15+의 주기적 재승인 프롬프트는 리스크로 관리한다(§10).</li>
+  </ul>
+</section>
+
+<!-- ============================================================ 8 -->
+<section class="card" id="s8">
+  <h2>8. 작업 계획 — Phase 0~4</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 가장 위험한 가설(과연 AI가 이 포맷을 알아들을까?)을 가장 싼 방법(앱 없이 손으로 만든 샘플)으로 제일 먼저 실험해요. 그다음에야 진짜 앱을 만들어요.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 250" role="img" aria-label="Phase 0~4 로드맵 타임라인">
+      <defs>
+        <marker id="arr6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <text x="20" y="34" font-size="12" font-weight="600" fill="#374151">합계 5.5~8.5 active-day (Phase 0~3)</text>
+
+      <!-- P0 -->
+      <rect x="20" y="52" width="95" height="118" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="67" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">Phase 0</text>
+      <text x="67" y="94" text-anchor="middle" font-size="12" fill="#2563eb">0.5d</text>
+      <text x="67" y="116" text-anchor="middle" font-size="11" fill="#374151">포맷 검증</text>
+      <text x="67" y="132" text-anchor="middle" font-size="11" fill="#374151">스파이크</text>
+      <text x="67" y="152" text-anchor="middle" font-size="10" fill="#6b7280">스펙 동결</text>
+
+      <!-- P1 -->
+      <rect x="130" y="52" width="150" height="118" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="205" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">Phase 1</text>
+      <text x="205" y="94" text-anchor="middle" font-size="12" fill="#2563eb">1~2d</text>
+      <text x="205" y="116" text-anchor="middle" font-size="11" fill="#374151">워킹 스켈레톤</text>
+      <text x="205" y="132" text-anchor="middle" font-size="11" fill="#374151">캡처→클립보드 관통</text>
+      <text x="205" y="152" text-anchor="middle" font-size="10" fill="#6b7280">도그푸딩 시작</text>
+
+      <!-- P2 -->
+      <rect x="295" y="52" width="200" height="118" rx="8" fill="#fffbeb" stroke="#d97706"/>
+      <text x="395" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">Phase 2</text>
+      <text x="395" y="94" text-anchor="middle" font-size="12" fill="#b45309">2~3d</text>
+      <text x="395" y="116" text-anchor="middle" font-size="11" fill="#374151">어노테이션 + CapNote</text>
+      <text x="395" y="132" text-anchor="middle" font-size="11" fill="#374151">번인·다운스케일·인코더</text>
+      <text x="395" y="152" text-anchor="middle" font-size="10" fill="#6b7280">대표 시나리오 실사용 가능</text>
+
+      <!-- P3 -->
+      <rect x="510" y="52" width="200" height="118" rx="8" fill="#ecfdf5" stroke="#059669"/>
+      <text x="610" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">Phase 3</text>
+      <text x="610" y="94" text-anchor="middle" font-size="12" fill="#047857">2~3d</text>
+      <text x="610" y="116" text-anchor="middle" font-size="11" fill="#374151">폴리싱·견고화</text>
+      <text x="610" y="132" text-anchor="middle" font-size="11" fill="#374151">멀티모니터·터미널 실측</text>
+      <text x="610" y="152" text-anchor="middle" font-size="10" fill="#6b7280">서명·공증 DMG</text>
+
+      <!-- P4 -->
+      <rect x="725" y="52" width="140" height="118" rx="8" fill="#ffffff" stroke="#9ca3af" stroke-dasharray="5 4"/>
+      <text x="795" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#6b7280">Phase 4</text>
+      <text x="795" y="94" text-anchor="middle" font-size="12" fill="#6b7280">백로그</text>
+      <text x="795" y="116" text-anchor="middle" font-size="11" fill="#6b7280">CLI / MCP 서버</text>
+      <text x="795" y="132" text-anchor="middle" font-size="11" fill="#6b7280">크로스플랫폼 등</text>
+      <text x="795" y="152" text-anchor="middle" font-size="10" fill="#9ca3af">필요 실증 시에만</text>
+
+      <!-- axis -->
+      <line x1="20" y1="200" x2="850" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr6)"/>
+      <text x="838" y="224" text-anchor="end" font-size="12" fill="#6b7280">시간 →</text>
+      <line x1="115" y1="194" x2="115" y2="206" stroke="#9ca3af"/>
+      <line x1="280" y1="194" x2="280" y2="206" stroke="#9ca3af"/>
+      <line x1="495" y1="194" x2="495" y2="206" stroke="#9ca3af"/>
+      <line x1="710" y1="194" x2="710" y2="206" stroke="#9ca3af"/>
+    </svg>
+    <figcaption>그림 ⑥ 로드맵 — Phase 0에서 가장 큰 가설을 가장 싸게 검증하고, Phase 1에서 루프를 최단 경로로 관통해 즉시 도그푸딩(만든 도구를 개발자 자신이 매일 실사용하는 것)을 시작한다.</figcaption>
+  </figure>
+
+  <h3>Phase별 상세</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>목표</th><th>산출물</th><th>완료 기준</th><th>예상</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>0</strong><br>포맷 검증 스파이크</td>
+        <td>앱을 만들기 전에 가장 큰 가설(에이전트가 CapNote를 해석한다)을 E2E(끝에서 끝까지, 실제 사용 흐름 그대로)로 검증</td>
+        <td>셸 스크립트 + 스로어웨이 HTML 캔버스로 수동 생성한 CapNote 블록</td>
+        <td>실제 Claude Code에 붙여넣어 이미지를 Read하고 마커 3종을 정확히 해석 → <strong>CapNote v1 스펙 동결</strong></td>
+        <td>0.5d</td>
+      </tr>
+      <tr>
+        <td><strong>1</strong><br>워킹 스켈레톤</td>
+        <td>루프를 최단 경로로 관통 → 즉시 도그푸딩 시작</td>
+        <td>Tauri v2 메뉴바 앱, 전역 단축키, screencapture 스폰 래퍼(ESC 취소 감지), 이미지 표시 창, 경로-only 클립보드, frontmost 기억·복귀, TCC 온보딩</td>
+        <td>실기기에서 캡처→⌘V까지 어노테이션 없이 동작. TCC 거동을 최전방에서 확인</td>
+        <td>1~2d</td>
+      </tr>
+      <tr>
+        <td><strong>2</strong><br>어노테이션 + CapNote</td>
+        <td>대표 시나리오(Figma 디테일 피드백)를 실사용 가능하게</td>
+        <td>스마트 툴 3종 + 단일 번호 시퀀스, 인라인 노트 팝오버, 번인 렌더러(배지 오프셋+리더), 1568px 다운스케일 파이프라인, CapNote v1 인코더, 파일 GC</td>
+        <td>마커 3개짜리 피드백을 ~10초에 생성해 에이전트가 정확히 수정</td>
+        <td>2~3d</td>
+      </tr>
+      <tr>
+        <td><strong>3</strong><br>폴리싱·견고화</td>
+        <td>매일 쓰는 도구의 신뢰성 확보 + 배포 가능 상태</td>
+        <td>창 표시 &lt;300ms, 키보드-온리 완주, 히스토리 10건 + 재어노테이션 + 다시 복사, 멀티모니터/스케일팩터 좌표 정확성(PNG 실측 기반), 설정(단축키/경로/보존), 터미널 3종(iTerm2/Terminal/VS Code) 붙여넣기 실측, 에이전트 지목 정확도 평가·hint 문구 튜닝, 서명·공증 DMG</td>
+        <td>지목 정확도 평가 통과 + 배포 가능한 서명·공증 DMG</td>
+        <td>2~3d</td>
+      </tr>
+      <tr>
+        <td><strong>4</strong><br>백로그</td>
+        <td>필요가 실증된 것만 착수</td>
+        <td>캡처 히스토리 팔레트, 클립보드 이미지 동시 탑재 옵션, capnote CLI / MCP 서버 모드(에이전트가 역으로 캡처 요청), 크로스플랫폼</td>
+        <td>각 항목별 실수요 확인 후 개별 판단</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================================================ 9 -->
+<section class="card" id="s9">
+  <h2>9. 일정 산정</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> "몇 명이 몇 달 걸릴까"가 아니라, 실제로 재어 둔 "내 하루 속도"로 계산해요. 다만 아무리 서둘러도 줄지 않는 일(권한 승인 기다리기, 실기기 테스트 같은)이 최소 기간을 정해요.</p>
+  <p>이 프로젝트는 <strong>1인 + AI 오케스트레이션</strong> 개발이며, 산정은 업계 평균(N인 팀 × M개월)이 아니라 <strong>실측 개인 속도(active-day 기준)</strong>를 적용한다. 사용한 가정은 아래 표에 전부 명시한다.</p>
+
+  <table>
+    <thead>
+      <tr><th>가정 / 단계</th><th>값</th><th>비고</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>산정 기준</td>
+        <td>1인 + AI 오케스트레이션, 실측 개인 속도(active-day)</td>
+        <td>COCOMO·"N인 팀 × M개월" 방식 미적용</td>
+      </tr>
+      <tr>
+        <td>관례적 추정 앵커</td>
+        <td>이런 도구의 폴리시드 MVP ≈ <strong>2~3 eng-month</strong></td>
+        <td>변환의 출발점으로만 사용</td>
+      </tr>
+      <tr>
+        <td>작업 믹스</td>
+        <td>압축형 ~40% / 표준형 ~40% / 직렬꼬리 ~20%</td>
+        <td>압축형: 스캐폴드·캔버스 도구·문서 / 표준형: 어노테이션 UX·포맷·클립보드 / 직렬꼬리: TCC 권한 거동, 포커스 복귀, 터미널 붙여넣기 실측, Retina/멀티모니터 QA 루프</td>
+      </tr>
+      <tr>
+        <td>레버리지 (AI 가속 배수)</td>
+        <td>압축형 45 · 표준형 11 · 직렬꼬리 5 (블렌디드)</td>
+        <td>+ 런타임 QA 루프 버퍼</td>
+      </tr>
+      <tr>
+        <td><strong>결과</strong></td>
+        <td><strong>약 6~9 active-day ≈ 0.3~0.5 달력개월</strong></td>
+        <td>Phase 합계 5.5~8.5d와 정합</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout green"><strong>왜 하한이 존재하나:</strong> 직렬꼬리(권한 거동·포커스 복귀·터미널 인터롭·좌표 정확성 QA)는 병렬화로 줄지 않는다 — 실기기에서 순서대로 확인해야 하는 일이기 때문. 이것이 달력 기간의 하한을 결정하며, Phase 0/1이 바로 이 리스크를 최전방에서 검증하도록 로드맵이 짜여 있다.</div>
+</section>
+
+<!-- ============================================================ 10 -->
+<section class="card" id="s10">
+  <h2>10. 주요 리스크 8건</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 미리 알고 있는 함정 목록이에요. 함정의 위치를 알면 밟기 전에 피하거나, 밟았을 때 빨리 빠져나올 수 있어요.</p>
+  <table>
+    <thead>
+      <tr><th style="width:26%">리스크</th><th style="width:34%">영향</th><th>대응</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1. TCC 화면 기록 권한 거동</td>
+        <td>dev 빌드 서명 변경 시 권한 리셋, macOS 15+ 주기적 재승인, 미승인 시 창이 누락된 이미지가 <em>조용히</em> 반환</td>
+        <td>Phase 1 실기기 검증 + 온보딩에서 테스트 캡처의 픽셀 검증 + 안정적 자가서명 인증서</td>
+      </tr>
+      <tr>
+        <td>2. 좌표 공간 불일치 (Retina/멀티모니터)</td>
+        <td>마커가 엉뚱한 위치를 지목 → 신뢰 붕괴</td>
+        <td>좌표는 오직 저장본 픽셀, 크기는 PNG 실측값 — 불변식으로 고정 (§5)</td>
+      </tr>
+      <tr>
+        <td>3. 다운스케일이 1px 디테일을 삭제</td>
+        <td>보고 대상(1px 보더 등) 자체가 이미지에서 사라질 수 있음</td>
+        <td>작은 크롭은 @2x 네이티브 유지로 완화. 전체 창 캡처에선 리스크 잔존을 인지</td>
+      </tr>
+      <tr>
+        <td>4. 에이전트가 hint 무시 / 이미지 px를 CSS px로 오인</td>
+        <td>좌표를 잘못 환산해 엉뚱한 코드 수정</td>
+        <td>hint 문구에 명시 + Phase 3 지목 정확도 평가로 튜닝. 완전 제거는 불가함을 전제</td>
+      </tr>
+      <tr>
+        <td>5. 번인 배지의 겹침·가림</td>
+        <td>밀집 어노테이션에서 배지가 서로 겹치거나 대상 픽셀을 가림</td>
+        <td>8~12px 오프셋 + 리더 라인으로 완화. 충돌 회피 배치는 Phase 3</td>
+      </tr>
+      <tr>
+        <td>6. 터미널 멀티라인 붙여넣기 엣지</td>
+        <td>bracketed paste가 없는 셸에서 멀티라인이 줄 단위로 분해될 수 있음</td>
+        <td>Claude Code는 문제없음. iTerm2/Terminal/VS Code 3종 실측 + 노트 소프트 리밋</td>
+      </tr>
+      <tr>
+        <td>7. Tauri v2 플러그인의 macOS 신버전 회귀</td>
+        <td>단축키·클립보드 등 셸 기능 마비</td>
+        <td>버전 핀 + 트레이 메뉴 폴백 + Electron 탈출 조건(2 active-day 룰, §7)</td>
+      </tr>
+      <tr>
+        <td>8. 외부 가정 결합</td>
+        <td>Anthropic 비전 1568px 규칙, Claude Code의 Ctrl+V/경로 Read 거동이 바뀌면 설계 전제가 흔들림</td>
+        <td>거동 변경 감지 시 정책 재검토 — 관리 항목으로 명시</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================================================ 11 -->
+<section class="card" id="s11">
+  <h2>11. 미해결 질문과 첫 행동</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 아직 답을 모르는 질문들과, 그 답을 알아내기 위해 내일 당장 할 실험이에요. 앱을 만들기 전에 종이 모형으로 먼저 실험해요.</p>
+
+  <h3>미해결 질문</h3>
+  <ul>
+    <li>hint의 최적 문구는 무엇인가? (Phase 0에서 초안 검증, Phase 3에서 정확도 평가로 튜닝)</li>
+    <li>샌드박스 에이전트가 <code>~/.capnote/</code>를 못 읽는 환경이 실제로 얼마나 되나? 경로 설정 옵션으로 충분한가?</li>
+    <li>밀집 어노테이션에서 배지 충돌 회피 배치가 어느 수준까지 필요한가? (Phase 3 판단)</li>
+    <li>클립보드 이미지 동시 탑재 옵션(Phase 4 백로그)에 실수요가 있는가?</li>
+    <li>macOS 15+ 재승인 프롬프트가 실사용에서 얼마나 자주 뜨는가?</li>
+  </ul>
+
+  <h3>첫 행동 — Phase 0 스파이크 체크리스트 (0.5d)</h3>
+  <p>코드 한 줄 없이, 가장 큰 가설("에이전트가 CapNote를 정확히 해석한다")을 오늘 검증할 수 있다.</p>
+  <ol>
+    <li><code>screencapture -i -x -o -t png</code>로 샘플 화면(카드 컴포넌트 류)을 수동 캡처한다.</li>
+    <li>스크립트(<code>sips</code> 등)로 1/2 다운스케일하고 장변 ≤ 1568px, PNG 유지를 확인한다.</li>
+    <li>스로어웨이 HTML 캔버스에서 point/rect/arrow 3종과 번호 배지(오프셋+리더)를 번인하고 좌표를 기록한다.</li>
+    <li>표준 예시(§4) 형식대로 CapNote v1 블록을 수동 작성한다.</li>
+    <li>클립보드에 <strong>텍스트만</strong> 복사해 실제 Claude Code에 <kbd>⌘V</kbd>로 붙여넣는다.</li>
+    <li>에이전트가 <code>image:</code> 경로를 Read하는지, [1][2][3] 마커 3종을 각각 정확히 지목하는지 확인한다.</li>
+    <li>비전을 쓰지 않는 조건(좌표+노트만)에서도 유효하게 동작하는지 확인한다.</li>
+    <li>결과를 바탕으로 hint 문구와 문법을 확정하고 <strong>CapNote v1 스펙을 동결</strong>한다 → Phase 1 착수.</li>
+  </ol>
+</section>
+
+<footer>Capture for Agents · 작업계획서 · 설계 단계 v1 · 2026-07-02</footer>
+
+</main>
+</body>
+</html>

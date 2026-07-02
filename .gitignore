@@ -1,0 +1,12 @@
+# OMC local state
+.omc/
+
+# macOS
+.DS_Store
+
+# Node (Phase 1 scaffold onwards)
+node_modules/
+dist/
+
+# Tauri (Phase 1 scaffold onwards)
+src-tauri/target/
