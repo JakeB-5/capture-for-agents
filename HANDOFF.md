@@ -7,7 +7,7 @@
 - **Phase 0~3 전부 완료** (0·1·2: 2026-07-02, 3: 2026-07-03). 검증 리포트: `docs/phase0-verification.md` · `phase2-verification.md` · `phase3-verification.md`
 - 제품 루프: ⌥⇧C(설정 가능) → screencapture → 어노테이션(스마트 툴 3종·인라인 노트·배지 충돌 회피) → ⌘⏎(번인→≤1568px 다운스케일→PNG 저장→`.capnote` 사이드카→CapNote 블록 클립보드→포커스 복귀) → ⌘V. 트레이: Capture / History 10건(Copy CapNote·Re-annotate) / Settings… / Quit.
 - 릴리스 번들: `pnpm tauri build` → `.app` 9.8MB + DMG 3.5MB (aarch64, **ad-hoc 서명**). 도그푸딩은 릴리스 `.app`을 /Applications에 두고 쓰는 운용 권장(재빌드마다 TCC 재승인 리스크 회피).
-- 커밋 흐름: `dev` ← `feature/phase3-polish` `--no-ff` 머지 (Wave A `36030a4` → Wave B `b0a762d` → 문서). 원격 없음(로컬 전용).
+- 커밋 흐름: `dev` ← `feature/phase3-polish` `--no-ff` 머지 완료(`03aafc4`; Wave A `36030a4` → Wave B `b0a762d` → 문서 `c9e206b`). 원격 없음(로컬 전용).
 - 코드 지도: `src/annotations|downscale|capnote|burnin|annotator.ts` + `src/main.ts` / `src-tauri/src/lib.rs`(커맨드 9종·트레이·GC 스레드) · `capture.rs`(스폰·pHYs 스케일·GC) · `settings.rs`(설정 로드/저장/라벨) · `macos.rs`(포커스 복귀)
 
 ## 2. 보류 2건 (해제 조건 명시)
