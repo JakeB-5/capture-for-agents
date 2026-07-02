@@ -1,0 +1,13 @@
+```capnote v1
+image: /Users/jin/.capnote/2026-07-02-181000.png
+size: 1246x820
+source: region capture @2x, downscaled 1/2 (2026-07-02 18:10)
+context: Figma 시안 대비 대시보드 화면 디테일 미반영 3건
+[1] rect (460,120)-(780,300)
+    이 카드에 1px solid #E5E7EB 보더가 빠져 있음. 시안에는 있는데 구현에 없음.
+[2] arrow (520,300)->(520,340)
+    카드와 아래 버튼 사이 간격이 지금 40px인데 시안 기준 24px로 줄일 것.
+[3] point (1108,32)
+    이 아이콘이 시안 기준 20x20인데 지금 16x16으로 렌더링됨.
+hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left), not CSS px.
+```

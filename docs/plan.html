@@ -244,15 +244,16 @@
   <pre><code>```capnote v1
 image: /Users/jin/.capnote/2026-07-02-164812.png
 size: 1246x820
+scale: 1 image px = 1 CSS px
 source: region capture @2x, downscaled 1/2 (2026-07-02 16:48)
 context: Figma 시안 대비 카드 컴포넌트 디테일 미반영 3건
-[1] rect (288,120)-(456,214)
+[1] rect (288,120)-(456,214) "상품 카드"
     카드에 1px solid #E5E7EB 보더가 빠져 있음. Figma에는 있는데 구현에 없음.
-[2] arrow (524,412)-&gt;(524,468)
+[2] arrow (524,412)-&gt;(524,468) "카드 → 저장 버튼"
     카드와 하단 버튼 사이 마진이 시안은 24px인데 구현은 12px. 24px로 수정.
-[3] point (1108,96)
+[3] point (1108,96) "헤더 설정 아이콘"
     이 아이콘이 시안 기준 20x20인데 지금 16x16으로 렌더링됨.
-hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left), not CSS px.
+hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left); px values in notes are CSS px.
 ```</code></pre>
 
   <h3>문법 표</h3>
@@ -264,11 +265,13 @@ hint: Read the image file at the path above. Numbered badges matching [n] are bu
       <tr><td>펜스</td><td><code>```capnote v1</code> … <code>```</code></td><td>페이로드 전체를 감싸는 코드 펜스. 포맷 식별자를 겸한다.</td></tr>
       <tr><td>image</td><td><code>image: /절대/경로.png</code></td><td>번인된 PNG의 절대 경로. 에이전트가 Read로 여는 대상. (필수)</td></tr>
       <tr><td>size</td><td><code>size: WxH</code></td><td>저장본의 실측 크기. <strong>이 크기가 곧 좌표 공간이다.</strong> (필수)</td></tr>
+      <tr><td>scale</td><td><code>scale: 1 image px = 1 CSS px</code></td><td>이미지 px ↔ CSS px 비율. 표준 다운스케일 정책(@2x→1/2)에선 항상 1:1이므로 기본 출력에 포함. (Phase 0 검증에서 추가)</td></tr>
       <tr><td>source</td><td><code>source: …</code></td><td>캡처 출처·스케일 메타 (선택).</td></tr>
       <tr><td>context</td><td><code>context: …</code></td><td>전체 상황 한 줄 요약 (선택).</td></tr>
       <tr><td>번호 마커</td><td><code>[n] point (x,y)</code></td><td>점 하나를 지목.</td></tr>
       <tr><td>사각형</td><td><code>[n] rect (x1,y1)-(x2,y2)</code></td><td>영역을 지목. 좌상단-우하단.</td></tr>
       <tr><td>화살표</td><td><code>[n] arrow (x1,y1)-&gt;(x2,y2)</code></td><td>방향을 지목. 꼬리-&gt;머리 순서.</td></tr>
+      <tr><td>라벨</td><td>좌표 뒤 <code>"…"</code> (선택)</td><td>대상 요소의 화면에 보이는 텍스트 라벨. 비전 없는 모델과 코드 검색에 가장 큰 개선. 없어도 하위 호환. (Phase 0 검증에서 추가)</td></tr>
       <tr><td>노트</td><td>마커 라인 다음 줄, 4칸 들여쓰기</td><td>자유 텍스트, 멀티라인 허용 (선택). 번인되지 않고 텍스트 채널이 담당.</td></tr>
       <tr><td>hint</td><td><code>hint: …</code></td><td>마지막 줄. 에이전트 행동 지시 1줄 (영어).</td></tr>
     </tbody>
@@ -333,6 +336,8 @@ hint: Read the image file at the path above. Numbered badges matching [n] are bu
   <ul>
     <li>번인은 <strong>다운스케일 후 최종 해상도에서</strong> 렌더링한다. 먼저 그리고 줄이면 배지가 흐려진다.</li>
     <li>번호 배지는 대상 픽셀을 가리지 않게 <strong>8~12px 오프셋 + 리더 라인</strong>으로 배치한다.</li>
+    <li>rect 주석은 <strong>점선(dashed) + 대상 바깥 2px 아웃셋</strong>으로 그린다 — 보더 누락을 지적할 때 주석 사각형이 실제 보더처럼 보이는 문제를 막는다. (Phase 0 검증에서 비전 에이전트 3/3이 지적)</li>
+    <li>point 주석은 채운 점 대신 <strong>링(비채움 원)</strong>으로 그린다 — 지목 대상(작은 아이콘 등)을 가리지 않게.</li>
     <li>노트 본문 텍스트는 이미지에 번인하지 않는다 — 그건 텍스트 채널의 일이다. 이미지에는 번호와 도형만 남긴다.</li>
   </ul>
 
@@ -773,7 +778,7 @@ hint: Read the image file at the path above. Numbered badges matching [n] are bu
     <li>클립보드에 <strong>텍스트만</strong> 복사해 실제 Claude Code에 <kbd>⌘V</kbd>로 붙여넣는다.</li>
     <li>에이전트가 <code>image:</code> 경로를 Read하는지, [1][2][3] 마커 3종을 각각 정확히 지목하는지 확인한다.</li>
     <li>비전을 쓰지 않는 조건(좌표+노트만)에서도 유효하게 동작하는지 확인한다.</li>
-    <li>결과를 바탕으로 hint 문구와 문법을 확정하고 <strong>CapNote v1 스펙을 동결</strong>한다 → Phase 1 착수.</li>
+    <li>결과를 바탕으로 hint 문구와 문법을 확정하고 <strong>CapNote v1 스펙을 동결</strong>한다 → Phase 1 착수. <strong>✅ 2026-07-02 완료</strong> — 블라인드 에이전트 6개로 검증, 마커 지목 9/9 · 파싱 무오류. 결과와 동결 수정 4건: <a href="phase0-verification.md">phase0-verification.md</a></li>
   </ol>
 </section>
 

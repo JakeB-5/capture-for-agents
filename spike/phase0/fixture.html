@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  /* Fixture for CapNote v1 Phase 0 verification.
+     All positions are absolute so ground-truth coordinates are exact. */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1246px; height: 820px; position: relative; background: #F3F4F6;
+         font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; overflow: hidden; }
+
+  .header { position: absolute; left: 0; top: 0; width: 1246px; height: 64px; background: #1F2937; }
+  .header .title { position: absolute; left: 24px; top: 20px; color: #fff; font-size: 17px; font-weight: 600; }
+  /* Settings icon: rendered 16x16 (the "bug" — spec says 20x20). Center = (1108,32) */
+  .icon { position: absolute; left: 1100px; top: 24px; width: 16px; height: 16px;
+          background: #F59E0B; border-radius: 3px; }
+
+  /* Card A (96,120)-(416,300): HAS the 1px border (correct per spec) */
+  .cardA { position: absolute; left: 96px; top: 120px; width: 320px; height: 180px;
+           background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; }
+  /* Card B (460,120)-(780,300): NO border (the bug) */
+  .cardB { position: absolute; left: 460px; top: 120px; width: 320px; height: 180px;
+           background: #fff; border-radius: 8px; }
+  .card-title { position: absolute; left: 16px; top: 14px; font-size: 15px; font-weight: 600; color: #111827; }
+  .card-line { position: absolute; left: 16px; background: #E5E7EB; height: 10px; border-radius: 5px; }
+
+  /* Save button (460,340)-(580,380). Gap from Card B bottom (y=300) to button top (y=340) = 40px (bug: spec says 24px) */
+  .btn { position: absolute; left: 460px; top: 340px; width: 120px; height: 40px;
+         background: #2563EB; color: #fff; border: none; border-radius: 6px;
+         font-size: 14px; font-weight: 600; }
+
+  /* Burn-in overlay (badges + rect + arrow only — notes are NOT burned in) */
+  svg.overlay { position: absolute; left: 0; top: 0; width: 1246px; height: 820px; pointer-events: none; }
+</style>
+</head>
+<body>
+  <div class="header"><span class="title">Acme Dashboard</span><div class="icon"></div></div>
+
+  <div class="cardA">
+    <span class="card-title">Card A</span>
+    <span class="card-line" style="top:52px;width:220px"></span>
+    <span class="card-line" style="top:76px;width:180px"></span>
+  </div>
+  <div class="cardB">
+    <span class="card-title">Card B</span>
+    <span class="card-line" style="top:52px;width:220px"></span>
+    <span class="card-line" style="top:76px;width:180px"></span>
+  </div>
+
+  <button class="btn">Save</button>
+
+  <svg class="overlay" viewBox="0 0 1246 820" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill="#EA580C"/>
+      </marker>
+    </defs>
+    <!-- [1] rect (460,120)-(780,300) around Card B; badge offset outside top-left with leader -->
+    <rect x="460" y="120" width="320" height="180" fill="none" stroke="#EA580C" stroke-width="2"/>
+    <line x1="452" y1="112" x2="460" y2="120" stroke="#EA580C" stroke-width="1.5"/>
+    <circle cx="444" cy="104" r="12" fill="#EA580C"/>
+    <text x="444" y="109" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+    <!-- [2] arrow (520,300)->(520,340) across the card/button gap; badge left of arrow -->
+    <line x1="520" y1="300" x2="520" y2="334" stroke="#EA580C" stroke-width="2" marker-end="url(#ah)"/>
+    <circle cx="496" cy="318" r="12" fill="#EA580C"/>
+    <text x="496" y="323" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+    <!-- [3] point (1108,32) = icon center; leader dot + badge below (header is dark) -->
+    <circle cx="1108" cy="32" r="3" fill="#EA580C"/>
+    <line x1="1108" y1="44" x2="1108" y2="60" stroke="#EA580C" stroke-width="1.5"/>
+    <circle cx="1108" cy="72" r="12" fill="#EA580C"/>
+    <text x="1108" y="77" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+  </svg>
+</body>
+</html>
