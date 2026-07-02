@@ -27,5 +27,6 @@ tauri-plugin-global-shortcut = "=2.3.2"
 tauri-plugin-clipboard-manager = "=2.3.2"
 chrono = "0.4"
 png = "0.17"
+base64 = "0.22"
 objc2-app-kit = { version = "0.3", features = ["NSWorkspace", "NSRunningApplication"] }
 objc2 = "0.6"

@@ -11,14 +11,32 @@
   <body>
     <div id="banner" class="banner hidden"></div>
 
-    <!-- Capture preview: shown after a successful screencapture -->
+    <!-- Capture view: shown after a successful screencapture -->
     <main id="capture-view" class="view hidden">
-      <div class="image-wrap">
-        <img id="capture-img" alt="captured screenshot" />
+      <div class="canvas-wrap">
+        <canvas id="annotation-canvas" tabindex="-1"></canvas>
+        <div id="note-popover" class="note-popover hidden">
+          <textarea id="note-textarea" rows="2" placeholder="노트 (선택)"></textarea>
+          <p class="popover-hint">Enter 확정 · ⇧Enter 줄바꿈 · 빈 채로 Enter = 생략</p>
+        </div>
       </div>
       <footer class="hint-bar">
-        <span id="capture-path" class="path"></span>
-        <span class="keys"><kbd>⌘⏎</kbd> 경로 복사 후 돌아가기 · <kbd>Esc</kbd> 닫기</span>
+        <div class="hint-left">
+          <span class="tool-indicator">
+            <button class="tool-btn active" data-tool="smart">자동</button>
+            <button class="tool-btn" data-tool="point">점</button>
+            <button class="tool-btn" data-tool="rect">사각</button>
+            <button class="tool-btn" data-tool="arrow">화살</button>
+          </span>
+          <input
+            id="context-input"
+            class="context-input"
+            type="text"
+            placeholder="context (선택) — 전체 상황 한 줄"
+          />
+        </div>
+        <span id="hint-error" class="hint-error hidden"></span>
+        <span class="keys">클릭=마커 · 드래그=사각형 · ⇧드래그=화살표 · <kbd>1/2/3</kbd> 도구 · <kbd>⌘⏎</kbd> 복사 · <kbd>⌘Z</kbd> 언두 · <kbd>⌫</kbd> 삭제 · <kbd>Esc</kbd> 취소</span>
       </footer>
     </main>
 

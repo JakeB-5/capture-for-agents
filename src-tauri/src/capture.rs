@@ -1,12 +1,13 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::time::{Duration, SystemTime};
 
 const SCREENCAPTURE: &str = "/usr/sbin/screencapture";
 
 pub enum CaptureOutcome {
-    /// Saved to ~/.capnote/YYYY-MM-DD-HHMMSS.png
-    Captured(PathBuf),
+    /// Saved to ~/.capnote/YYYY-MM-DD-HHMMSS.png; scale is 2 on Retina, 1 otherwise.
+    Captured { path: PathBuf, scale: u32 },
     /// User pressed ESC — screencapture exits without creating the file.
     Cancelled,
 }
@@ -68,6 +69,99 @@ fn classify_failure(stderr: &str) -> CaptureError {
     }
 }
 
+/// Capture pixel density from the PNG pHYs chunk: 144dpi => @2x, else @1x.
+/// Best-effort — any read/parse failure means 1.
+fn png_scale(path: &Path) -> u32 {
+    let file = match fs::File::open(path) {
+        Ok(f) => f,
+        Err(_) => return 1,
+    };
+    let decoder = png::Decoder::new(std::io::BufReader::new(file));
+    let reader = match decoder.read_info() {
+        Ok(r) => r,
+        Err(_) => return 1,
+    };
+    if let Some(dims) = reader.info().pixel_dims {
+        if dims.unit == png::Unit::Meter {
+            let dpi = dims.xppu as f64 * 0.0254;
+            if dpi.round() >= 140.0 {
+                return 2;
+            }
+        }
+    }
+    1
+}
+
+/// True iff `path` is a .png directly inside ~/.capnote (no traversal).
+pub fn is_capnote_png(path: &Path) -> bool {
+    if path.extension().and_then(|e| e.to_str()) != Some("png") {
+        return false;
+    }
+    let home = match std::env::var("HOME") {
+        Ok(h) => h,
+        Err(_) => return false,
+    };
+    let expected = Path::new(&home).join(".capnote");
+    let actual_parent = match path.parent() {
+        Some(p) => p,
+        None => return false,
+    };
+    // Canonicalize the parent only — the file itself may not exist yet.
+    let canon_actual = match actual_parent.canonicalize() {
+        Ok(p) => p,
+        Err(_) => return false,
+    };
+    let canon_expected = expected.canonicalize().unwrap_or(expected);
+    canon_actual == canon_expected
+}
+
+/// Best-effort GC of ~/.capnote: remove *.png older than 14 days, then keep
+/// only the newest 500. Never errors — logs to stderr at most.
+pub fn gc_capnote_dir() {
+    let home = match std::env::var("HOME") {
+        Ok(h) => h,
+        Err(_) => return,
+    };
+    let dir = Path::new(&home).join(".capnote");
+    let entries = match fs::read_dir(&dir) {
+        Ok(e) => e,
+        Err(_) => return,
+    };
+
+    let cutoff = SystemTime::now()
+        .checked_sub(Duration::from_secs(14 * 24 * 3600))
+        .unwrap_or(SystemTime::UNIX_EPOCH);
+    let mut survivors: Vec<(SystemTime, PathBuf)> = Vec::new();
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("png") {
+            continue;
+        }
+        let mtime = match entry.metadata().and_then(|m| m.modified()) {
+            Ok(t) => t,
+            Err(_) => continue,
+        };
+        if mtime < cutoff {
+            if let Err(e) = fs::remove_file(&path) {
+                eprintln!("capnote gc: {}: {e}", path.display());
+            }
+        } else {
+            survivors.push((mtime, path));
+        }
+    }
+
+    // Remove oldest excess beyond 500.
+    if survivors.len() > 500 {
+        survivors.sort_unstable_by_key(|(t, _)| *t);
+        for (_, path) in &survivors[..survivors.len() - 500] {
+            if let Err(e) = fs::remove_file(path) {
+                eprintln!("capnote gc: {}: {e}", path.display());
+            }
+        }
+    }
+}
+
 /// Interactive capture: drag selection, Space toggles window mode, ESC cancels.
 pub fn run_interactive_capture() -> Result<CaptureOutcome, CaptureError> {
     let tmp = std::env::temp_dir().join(format!("capnote-{}.png", std::process::id()));
@@ -91,7 +185,8 @@ pub fn run_interactive_capture() -> Result<CaptureOutcome, CaptureError> {
             .map_err(|e| CaptureError::Failed(format!("cannot save to {}: {e}", dest.display())))?;
         let _ = fs::remove_file(&tmp);
     }
-    Ok(CaptureOutcome::Captured(dest))
+    let scale = png_scale(&dest);
+    Ok(CaptureOutcome::Captured { path: dest, scale })
 }
 
 #[derive(serde::Serialize)]
