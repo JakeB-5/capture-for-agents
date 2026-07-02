@@ -1,58 +1,65 @@
-# HANDOFF — Phase 2 착수용 (갱신: 2026-07-02)
+# HANDOFF — Phase 3 착수용 (갱신: 2026-07-02)
 
-> 신규 세션은 이 파일 → `CLAUDE.md` → `docs/plan.html` 순으로 읽고 바로 Phase 2를 시작하면 된다.
+> 신규 세션은 이 파일 → `CLAUDE.md` → `docs/plan.html` 순으로 읽고 바로 Phase 3를 시작하면 된다.
 > 권장 세션 설정: **모델 Fable 5 · effort high** (Phase 게이트 리뷰 시점에만 xhigh/ultracode로 상향).
 
 ## 1. 어디까지 왔나
 
-- **Phase 0 완료 (2026-07-02)** — 블라인드 에이전트 6개 E2E, 마커 지목 9/9 → CapNote v1 스펙 동결. 근거: `docs/phase0-verification.md`, 재현물: `spike/phase0/`
-- **Phase 1 완료 (2026-07-02)** — 워킹 스켈레톤 실기기 검증 완주:
-  - ⌥⇧C(또는 트레이 메뉴) → `screencapture -i` 드래그/Space 창 모드/ESC 취소 → always-on-top 프리뷰 창 → ⌘⏎ 경로-only 클립보드 → 직전 앱 포커스 자동 복귀 → ⌘V로 Claude Code가 `~/.capnote/*.png` 경로를 이미지로 수신 확인.
-  - `tsc --noEmit` · `eslint --quiet` · `cargo check` 모두 클린.
-- 코드 구조 (전부 Phase 1에서 생성):
-  - `src-tauri/src/lib.rs` — 앱 셋업(Accessory 정책·트레이·⌥⇧C 등록+실패 폴백), 커맨드 6종(`show_capture_window`, `copy_path_and_restore`, `dismiss_window`, `get_app_status`, `run_test_capture`, `open_screen_recording_settings`)
-  - `src-tauri/src/capture.rs` — screencapture 스폰 래퍼 (ESC=파일 미생성, TCC=exit 1+"could not create image"), `~/.capnote/YYYY-MM-DD-HHMMSS.png` 저장(충돌 시 `-n` 접미), 테스트 캡처 픽셀 균일성 검증
-  - `src-tauri/src/macos.rs` — frontmost 앱 기억·복귀 (objc2-app-kit NSWorkspace/NSRunningApplication, TCC 프롬프트 없음)
-  - `src/main.ts` — 캡처 프리뷰(이미지 논리 크기로 창 리사이즈)·TCC 온보딩 뷰·키 바인딩(⌘⏎/Esc)
-  - 이미지 표시는 asset protocol (`$HOME/.capnote/**` 스코프, `tauri.conf.json`)
-- 커밋 흐름: `dev` ← `feature/phase1-working-skeleton` `--no-ff` 머지 완료(`de55cc1`; 스캐폴드 `502ca3d` → 구현 `a31fddc` → 문서 `8b785ec`). 원격 없음(로컬 전용).
-- 잔여물: `~/.capnote/`에 Phase 0~1 테스트 캡처 5장 남아 있음(지워도 무방 — GC는 Phase 2 항목 6). dev 앱은 세션 종료 시 함께 내려가므로 도그푸딩은 터미널에서 직접 `pnpm tauri dev`.
-- Phase 1의 실측 발견:
-  1. **macOS 14+ 협조적 활성화로 포커스 복귀 동작** — `activateWithOptions(empty)`로 충분 (`ActivateIgnoringOtherApps`는 deprecated·무효). 우리 창이 frontmost일 때 호출되므로 성립.
-  2. **동시 인터랙티브 캡처 불가** — 앱 인스턴스 2개가 동시에 screencapture를 띄우면 `cannot run two interactive screen captures at a time` (exit 1, stderr). 인스턴스 내 재진입은 `capturing` 플래그로 방어했으나 **싱글 인스턴스 강제는 없음** → Phase 3 폴리싱 후보(`tauri-plugin-single-instance`). dev 중 `tauri dev` 이중 실행에 주의.
-  3. dev 모드 TCC 권한은 터미널(cmux)에 귀속 — 재빌드해도 유지되나 서명 변경 시 리셋 리스크는 여전(plan.html §10).
-- 플러그인 버전 핀: `tauri-plugin-global-shortcut`·`tauri-plugin-clipboard-manager` `=2.3.2` (Cargo.toml). 업그레이드는 의도적으로만.
+- **Phase 0 완료 (2026-07-02)** — 블라인드 에이전트 6개 E2E, 마커 지목 9/9 → CapNote v1 스펙 동결. 근거: `docs/phase0-verification.md`
+- **Phase 1 완료 (2026-07-02)** — 워킹 스켈레톤: ⌥⇧C → screencapture → 프리뷰 → 클립보드 → 포커스 복귀 실기기 완주.
+- **Phase 2 완료 (2026-07-02)** — 어노테이션 + CapNote 실기기 E2E 검증 완주 (`docs/phase2-verification.md`):
+  - 캡처 → 스마트 툴(클릭=point/드래그=rect/⇧드래그=arrow, 1/2/3/A 전환) → 인라인 노트 팝오버 → ⌘⏎ 원샷 커밋(번인→1568px 다운스케일→PNG 저장→CapNote 블록 클립보드→포커스 복귀) → 실제 Claude Code ⌘V → 블라인드 에이전트 마커 3종 지목 확인.
+  - 사용자 실사용 판정: 마커 의도 일치 · 체감 속도 문제없음.
+  - `pnpm check` · `pnpm lint` · `cargo check` · `pnpm build` 클린. 인코더는 동결 표준 예시와 바이트 단위 일치(순수 로직 스모크).
+- 코드 구조 (Phase 2에서 추가/변경):
+  - `src/annotations.ts` — 모델 + `AnnotationStore` (단일 번호 시퀀스 = 배열 순서, 삭제 시 자동 재정렬, 언두 스택)
+  - `src/downscale.ts` — `planDownscale` (장변 ≤1568 · @2x→1/2 · 작은 크롭 네이티브 · 업스케일 금지)
+  - `src/capnote.ts` — 동결 문법 인코더 (hint v2 원문 포함. **문법 변경 = v1.1 제안으로만**)
+  - `src/burnin.ts` — 번인 렌더러 + `hitTest`/`badgeCenter`. 프리뷰·번인·히트테스트가 `badgePlacement` 하나를 공유(WYSIWYG)
+  - `src/annotator.ts` — 캔버스 에디터 (포인터 제스처, 팝오버, 선택/삭제/언두, 커밋 파이프라인)
+  - `src-tauri/src/lib.rs` — 커맨드 추가: `load_capture_png`(base64 로드), `save_annotated_png`(경로 검증+PNG 매직 체크), `copy_text_and_restore`(구 copy_path_and_restore 대체), `discard_capture`(ESC 취소). 시작 시 GC 스레드
+  - `src-tauri/src/capture.rs` — PNG pHYs로 @2x 감지(`capture-done` 페이로드 `{path, scale}`), `gc_capnote_dir`(14일/500개), `is_capnote_png` 경로 가드
+- 커밋 흐름: `dev` ← `feature/phase2-annotation-capnote` `--no-ff` 머지 (구현 `10e521c` → taint 수정 `14bf1d1` → 문서). 원격 없음(로컬 전용).
+- **Phase 2의 실측 발견 3건** (상세: `docs/phase2-verification.md` §3):
+  1. **asset protocol은 캔버스를 taint시킴** — `convertFileSrc` 이미지는 교차 출처라 `toBlob()`이 SecurityError. 캡처 로드는 `load_capture_png` IPC(base64 → same-origin `data:` URL)로 교체했고 **asset protocol 설정·기능 플래그는 제거됨**. 이미지 픽셀을 읽는 코드를 추가할 때 asset protocol로 되돌아가지 말 것.
+  2. **Claude Code가 붙여넣은 텍스트 속 이미지 경로를 자동으로 이미지 첨부로 치환** — `image:` 라인이 비어 보이는 게 정상(첨부 source가 그 경로). 시각 채널 자동 도착. 외부 가정(리스크 #8)으로 거동 변경 감시.
+  3. **배지가 밀집 텍스트에서 이웃 줄을 가림** (리스크 #5 실측) — 충돌 회피 배치는 Phase 3 항목.
+- 플러그인 버전 핀: `tauri-plugin-global-shortcut`·`tauri-plugin-clipboard-manager` `=2.3.2`. Phase 1~2 플러그인 이슈 0건 (Electron 탈출 조건 미발동).
+- dev 실행 주의: `pnpm tauri dev` 이중 실행 금지(포트 1420 + 동시 인터랙티브 캡처 불가). 잔여 프로세스는 `lsof -nP -i :1420`과 `pgrep -fl capture-for-agents`로 확인 후 정리.
 
-## 2. 지금 할 일 — Phase 2 어노테이션 + CapNote (예상 2~3 active-day)
+## 2. 지금 할 일 — Phase 3 폴리싱·견고화 (예상 2~3 active-day)
 
-목표: **대표 시나리오(Figma 디테일 피드백)를 실사용 가능하게** — 마커 3개짜리 피드백을 ~10초에 생성해 에이전트가 정확히 수정. 상세·완료 기준은 plan.html §8 Phase 2 행, 문법·번인·좌표 정책은 §4~5 (단일 출처, 스펙 동결).
+목표: **매일 쓰는 도구의 신뢰성 + 배포 가능 상태.** 완료 기준: 지목 정확도 평가 통과 + 서명·공증 DMG (plan.html §8 Phase 3 행).
 
-착수 체크리스트 (독립 모듈이 많아 서브에이전트 스워밍 적합 — 위임은 Sonnet):
+착수 체크리스트:
 
-1. **1568px 다운스케일 파이프라인** — 장변 ≤1568 PNG, Retina @2x는 1/2, 작은 크롭 네이티브 유지, 업스케일 금지 (불변식 3). 좌표계는 저장본 픽셀 하나로 통일 (불변식 2)
-2. **스마트 툴 3종 + 단일 번호 시퀀스** — point/rect/arrow가 하나의 자동 증가 번호 공유, 삭제 시 재정렬 (불변식 5). Canvas 2D 어노테이터
-3. **인라인 노트 팝오버** — 마커 찍은 직후 그 자리에서 입력, 노트는 텍스트 채널 전용(번인 안 함)
-4. **번인 렌더러** — 다운스케일 후 최종 해상도에서: 배지 8~12px 오프셋+리더 라인, rect 점선+2px 아웃셋, point 링 (불변식 4, 동결된 스타일)
-5. **CapNote v1 인코더** — 동결 문법(plan.html §4): 헤더(`image:`/`size:` 실측/`scale:`/`source:`/`context:`) + `[n]` 엔트리 + hint v2. ⌘⏎가 경로-only 대신 CapNote 블록 전체를 복사하도록 교체
-6. **파일 GC** — 앱 시작 시 14일 경과 또는 500개 초과분 정리
-7. **E2E 검증** — 실제 앱 산출물로 Claude Code 붙여넣기, 마커 3종 지목 확인 (Phase 0 방식. 블라인드 검증 1회 권장)
+1. **속도** — 캡처 후 어노테이션 창 표시 <300ms 실측·튜닝 (현재 base64 IPC 로드 경유 — 대형 캡처에서 병목이면 여기부터)
+2. **키보드-온리 완주** — 캡처→마커→노트→커밋 전 과정 마우스 없이(마커 배치 키보드 이동 등은 과설계 주의 — 최소로)
+3. **히스토리 10건** — 최근 캡처 재어노테이션 + 다시 복사 (트레이 메뉴 or 팔레트)
+4. **멀티모니터/스케일팩터 좌표 정확성** — @1x/@2x 혼합 환경에서 PNG 실측 기반 검증 (pHYs 감지가 모니터별로 옳은지)
+5. **배지 충돌 회피 배치** — Phase 2 실측 발견 3. 배지 후보 방향 선택 시 다른 배지·도형과의 겹침 페널티
+6. **싱글 인스턴스 가드** — `tauri-plugin-single-instance` (버전 핀 관례 유지)
+7. **설정** — 단축키 / 저장 경로 / 보존 정책(14일·500개)
+8. **터미널 3종 실측** — iTerm2 / Terminal / VS Code에 CapNote 멀티라인 ⌘V (bracketed paste 엣지, phase0-verification.md §6 체크박스 갱신)
+9. **에이전트 지목 정확도 평가 + hint 튜닝** — Phase 0 방식 블라인드 배치로 정량화, hint 문구 조정은 스펙 동결 범위 내(문법 불변)
+10. **서명·공증 DMG** — 안정적 서명으로 TCC 리셋 리스크 완화(리스크 #1). 공증 파이프라인은 Apple Developer 계정 필요(사용자 개입)
 
-**Electron 탈출 조건(사전 합의)**: Tauri 플러그인 엣지 케이스로 2 active-day 이상 소모되면 Electron 전환. Phase 1에서는 플러그인 이슈 0건이었다.
+**Electron 탈출 조건(사전 합의)**: Tauri 플러그인 엣지 케이스로 2 active-day 이상 소모되면 Electron 전환.
 
 ## 3. 사용자 개입이 필요한 지점 (해당 시점에 요청)
 
-- 어노테이션 UI 실사용 피드백 (마커 찍기 → 노트 입력 → ⌘⏎까지 체감 속도)
-- E2E: 생성된 CapNote 블록을 실제 Claude Code에 ⌘V — 에이전트의 마커 지목 정확성 확인
+- 실기기 실측 전반: 창 표시 속도 체감, 멀티모니터 구성, 터미널 3종 붙여넣기, TCC 재승인 관찰
+- 서명·공증: Apple Developer 계정/인증서 준비
 - 대화형 명령은 사용자가 프롬프트에 `! <command>` 로 직접 실행하면 출력이 세션에 들어온다
 
 ## 4. 규칙 리마인드 (근거 문서)
 
-- **불변식 5개는 CLAUDE.md가 원문** — 위반 금지. CapNote 문법·번인·좌표 정책의 단일 출처는 plan.html §4~5. **스펙은 동결됨: 문법 변경은 v1.1 제안으로만.**
+- **불변식 5개는 CLAUDE.md가 원문** — 위반 금지. CapNote 문법·번인·좌표 정책의 단일 출처는 plan.html §4~5. **스펙 동결: 문법 변경은 v1.1 제안으로만.**
 - CapNote/번인 렌더러/좌표 파이프라인 변경 시 **실제 Claude Code 붙여넣기 E2E 검증** 필수
 - git: `git checkout -b feature/<name> dev` → 작업 → `dev`에 `--no-ff` 머지 (원격이 생기면 push -u + dev 대상 PR)
 - 완료 보고 전 `pnpm check` + `pnpm lint` + `cargo check`
-- **Phase 완료 시 갱신 3종 세트**: ① plan.html 상단 진행 트래커(HTML 주석에 갱신 항목 6개) ② README 로드맵 표 ③ 검증 리포트/체크박스 + 이 HANDOFF 갱신
+- **Phase 완료 시 갱신 3종 세트**: ① plan.html 상단 진행 트래커(HTML 주석의 갱신 항목 6개) ② README 상태·로드맵 ③ 검증 리포트 + 이 HANDOFF 갱신
 
-## 5. Phase 2 이후 예고
+## 5. Phase 3 이후 예고 (Phase 4 백로그 — 필요 실증 시에만)
 
-- Phase 3 (2~3d): 속도 폴리싱(<300ms 창 표시), 키보드-온리 완주, 히스토리 10건, 멀티모니터/스케일팩터 좌표 정확성, 설정(단축키/경로/보존), 터미널 3종(iTerm2/Terminal/VS Code) 붙여넣기 실측, 에이전트 지목 정확도 평가·hint 튜닝, 싱글 인스턴스 가드, 서명·공증 DMG.
+캡처 히스토리 팔레트, 클립보드 이미지 동시 탑재 옵션, capnote CLI / MCP 서버 모드(에이전트가 역으로 캡처 요청), 크로스플랫폼. CapNote v1.1 백로그는 `docs/phase0-verification.md` §5.
