@@ -1,0 +1,13 @@
+[package]
+name = "winprobe"
+version = "0.1.0"
+edition = "2021"
+description = "Throwaway W0 spike: Windows capture/DPI/hotkey/overlay probes (docs/plan-windows.html §12)"
+
+[workspace]
+
+[dependencies]
+global-hotkey = "0.8.0"
+tao = "0.35.3"
+wry = "0.55.1"
+xcap = "0.9.6"

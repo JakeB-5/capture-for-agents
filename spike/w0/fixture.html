@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>여기요!! — W0 픽스처 생성기</title>
+<style>
+  /* W0 spike: generates the Windows blind-test fixture PNG + CapNote block
+     for docs/plan-windows.html §12 checklist item 6. Serve over http:
+       cd spike/w0 && python3 -m http.server 8000
+     then open http://localhost:8000/fixture.html (file:// blocks the module import). */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", Arial, sans-serif;
+         background: #f1f5f9; color: #1f2937; padding: 24px; font-size: 14px; }
+  h1 { font-size: 18px; margin-bottom: 4px; }
+  p.sub { color: #6b7280; margin-bottom: 16px; }
+  #err { display: none; background: #fef2f2; border: 1px solid #fecaca; padding: 10px 14px;
+         border-radius: 8px; margin-bottom: 16px; color: #991b1b; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  label { font-weight: 600; }
+  select, input[type=text] { padding: 4px 8px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px; }
+  #context { width: 420px; }
+  button { padding: 6px 14px; font-size: 14px; border: none; border-radius: 6px;
+           background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; }
+  #info { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 14px;
+          margin-bottom: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+  textarea { width: 100%; max-width: 860px; height: 300px; font-family: ui-monospace, Menlo, Consolas, monospace;
+             font-size: 12px; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; }
+  canvas#preview { max-width: 100%; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff;
+                   display: block; margin-top: 12px; }
+</style>
+</head>
+<body>
+  <h1>여기요!! — Phase W0 픽스처 생성기</h1>
+  <p class="sub">시나리오(물리 px + OS 배율) 선택 → 합성 대시보드 장면을 <code>resized_size()</code>로 다운스케일 → 최종 해상도에서 마커 번인(불변식 4) → PNG 다운로드 + CapNote 블록 생성. 블라인드 지목 테스트용.</p>
+  <div id="err"></div>
+
+  <div class="row">
+    <label>시나리오</label><select id="scenario"></select>
+    <label>프로필</label>
+    <select id="profile">
+      <option value="universal" selected>범용 (1568/1568)</option>
+      <option value="highres">고해상도 (2576/4784 · 참고용)</option>
+    </select>
+    <label>경로 스타일</label>
+    <select id="pathstyle">
+      <option value="win" selected>windows (백슬래시)</option>
+      <option value="winslash">windows (슬래시)</option>
+      <option value="wsl">wsl (/mnt/c)</option>
+    </select>
+  </div>
+  <div class="row">
+    <label>context</label>
+    <input type="text" id="context" value="Figma 시안 대비 대시보드 화면 디테일 미반영 3건">
+    <button id="download">PNG 다운로드</button>
+  </div>
+
+  <div id="info"></div>
+  <textarea id="block" readonly spellcheck="false"></textarea>
+  <canvas id="preview"></canvas>
+
+<script type="module">
+const errEl = document.getElementById("err");
+if (location.protocol === "file:") {
+  errEl.style.display = "block";
+  errEl.textContent = "file:// 로 열면 모듈 import가 차단됩니다. spike/w0 에서 `python3 -m http.server 8000` 실행 후 http://localhost:8000/fixture.html 로 여세요.";
+}
+let resizedSize, countImageTokens, PROFILES;
+try {
+  ({ resizedSize, countImageTokens, PROFILES } = await import("./resized-size.mjs"));
+} catch (e) {
+  errEl.style.display = "block";
+  errEl.textContent = "resized-size.mjs 로드 실패 — 이 페이지는 http로 서빙해야 합니다 (spike/w0 에서 python3 -m http.server). " + e;
+  throw e;
+}
+
+// ===== PURE LOGIC (node-testable — the runbook's verify script extracts this section verbatim) =====
+
+// Fixed timestamp so generated blocks are deterministic and match the
+// pre-generated capnote-blocks/*.txt payloads.
+const W0_TIMESTAMP = "2026-07-03 12:00";
+
+// Scene base geometry = spike/phase0/fixture.html (1246x820, absolute positions).
+const SCENE = { w: 1246, h: 820 };
+
+// §6.3 scenario table: physical px + OS scale factor.
+const SCENARIOS = {
+  "1920x1080": { physW: 1920, physH: 1080, osScale: 1,    label: "1920×1080 @100% 전체 화면" },
+  "2560x1440": { physW: 2560, physH: 1440, osScale: 1.25, label: "2560×1440 @125% 전체 화면" },
+  "2880x1920": { physW: 2880, physH: 1920, osScale: 1.5,  label: "2880×1920 @150% 전체 화면 (Surface 3:2)" },
+  "3840x2160": { physW: 3840, physH: 2160, osScale: 1.5,  label: "3840×2160 @150% 전체 화면 (4K)" },
+  "1000x750":  { physW: 1000, physH: 750,  osScale: 1.25, label: "800×600 CSS 영역 @125%" },
+  "1800x1350": { physW: 1800, physH: 1350, osScale: 1.5,  label: "1200×900 CSS 창 @150%" },
+};
+
+// Ground-truth markers in scene px — same three seeded bugs as Phase 0.
+// One shared auto-increment sequence (invariant 5); rect coords pre-normalized.
+const MARKERS = [
+  { kind: "rect",  x1: 460, y1: 120, x2: 780, y2: 300,
+    note: "이 카드에 1px solid #E5E7EB 보더가 빠져 있음. 시안에는 있는데 구현에 없음." },
+  { kind: "arrow", x1: 520, y1: 300, x2: 520, y2: 340,
+    note: "카드와 아래 버튼 사이 간격이 지금 40px인데 시안 기준 24px로 줄일 것." },
+  { kind: "point", x1: 1108, y1: 32,
+    note: "이 아이콘이 시안 기준 20x20인데 지금 16x16으로 렌더링됨." },
+];
+
+function computeLayout(key, profileKey) {
+  const sc = SCENARIOS[key];
+  const [finalW, finalH] = resizedSize(sc.physW, sc.physH, PROFILES[profileKey]);
+  // s: scene px → physical px (uniform, top-left anchored; canvas remainder is background).
+  const s = Math.min(sc.physW / SCENE.w, sc.physH / SCENE.h);
+  // f: physical px → final saved px (the resized_size downscale factor).
+  const f = finalW / sc.physW;
+  return {
+    key, profileKey, ...sc, finalW, finalH, s, f,
+    scaleCoeff: sc.osScale * f, // §6.4: N = OS scale × downscale factor
+    tokens: countImageTokens(finalW, finalH),
+  };
+}
+
+// Single source of truth for scene px → final image px. The burned markers use
+// the float form; the CapNote block text uses the rounded/clamped form
+// (mirrors toFinalPx in src/downscale.ts) — 시각·텍스트가 같은 좌표라는 게 블라인드 테스트의 요점.
+function sceneToFinalF(v, L) { return v * L.s * L.f; }
+function sceneToFinalPx(v, L, max) {
+  return Math.min(Math.max(0, Math.round(sceneToFinalF(v, L))), max - 1);
+}
+
+function formatScale(n) {
+  return Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100);
+}
+
+function imagePathFor(key, style) {
+  const name = `w0-fixture-${key}.png`;
+  if (style === "wsl") return `/mnt/c/Users/YOURNAME/.capnote/${name}`;
+  if (style === "winslash") return `C:/Users/YOURNAME/.capnote/${name}`;
+  return `C:\\Users\\YOURNAME\\.capnote\\${name}`;
+}
+
+// Mirrors src/capnote.ts encodeCapNote exactly — grammar is FROZEN (v1).
+const HINT =
+  "hint: Read the image file at the path above. Numbered badges matching " +
+  "[n] are burned into the image. Coordinates are image pixels (origin " +
+  "top-left); px values in notes are CSS px.";
+
+function buildBlock(L, style, context) {
+  const px = (v) => sceneToFinalPx(v, L, L.finalW);
+  const py = (v) => sceneToFinalPx(v, L, L.finalH);
+  const how = L.f === 1 ? "native" : L.f === 0.5 ? "downscaled 1/2" : `downscaled to ${L.finalW}x${L.finalH}`;
+  const lines = [
+    "```capnote v1",
+    `image: ${imagePathFor(L.key, style)}`,
+    `size: ${L.finalW}x${L.finalH}`,
+    `scale: ${formatScale(L.scaleCoeff)} image px = 1 CSS px`,
+    `source: screen capture @${L.osScale}x, ${how} (${W0_TIMESTAMP})`,
+  ];
+  if (context && context.trim()) lines.push(`context: ${context.trim()}`);
+  MARKERS.forEach((a, i) => {
+    const n = i + 1;
+    if (a.kind === "rect") lines.push(`[${n}] rect (${px(a.x1)},${py(a.y1)})-(${px(a.x2)},${py(a.y2)})`);
+    else if (a.kind === "arrow") lines.push(`[${n}] arrow (${px(a.x1)},${py(a.y1)})->(${px(a.x2)},${py(a.y2)})`);
+    else lines.push(`[${n}] point (${px(a.x1)},${py(a.y1)})`);
+    for (const noteLine of a.note.split("\n")) lines.push(`    ${noteLine}`);
+  });
+  lines.push(HINT, "```");
+  return lines.join("\n") + "\n";
+}
+
+// ===== END PURE LOGIC =====
+
+// ── Scene rendering (physical px) ────────────────────────────────────────────
+function renderScene(L) {
+  const c = document.createElement("canvas");
+  c.width = L.physW;
+  c.height = L.physH;
+  const ctx = c.getContext("2d");
+  const s = L.s;
+  const rr = (x, y, w, h, r) => {
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+    else ctx.rect(x, y, w, h);
+  };
+
+  ctx.fillStyle = "#F3F4F6";
+  ctx.fillRect(0, 0, L.physW, L.physH);
+
+  // Header (full canvas width) + title + 16x16 icon bug (center scene(1108,32)).
+  ctx.fillStyle = "#1F2937";
+  ctx.fillRect(0, 0, L.physW, 64 * s);
+  ctx.fillStyle = "#fff";
+  ctx.font = `600 ${17 * s}px -apple-system, "Segoe UI", Arial, sans-serif`;
+  ctx.textBaseline = "top";
+  ctx.textAlign = "left";
+  ctx.fillText("Acme Dashboard", 24 * s, 21 * s);
+  ctx.fillStyle = "#F59E0B";
+  rr(1100 * s, 24 * s, 16 * s, 16 * s, 3 * s);
+  ctx.fill();
+
+  // Cards: A has the 1px border (1 CSS px ≈ 1×s physical px), B does not (the bug).
+  const card = (left, title, withBorder) => {
+    ctx.fillStyle = "#fff";
+    rr(left * s, 120 * s, 320 * s, 180 * s, 8 * s);
+    ctx.fill();
+    if (withBorder) {
+      ctx.strokeStyle = "#E5E7EB";
+      ctx.lineWidth = Math.max(1, s);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "#111827";
+    ctx.font = `600 ${15 * s}px -apple-system, "Segoe UI", Arial, sans-serif`;
+    ctx.fillText(title, (left + 16) * s, (120 + 15) * s);
+    ctx.fillStyle = "#E5E7EB";
+    rr((left + 16) * s, (120 + 52) * s, 220 * s, 10 * s, 5 * s); ctx.fill();
+    rr((left + 16) * s, (120 + 76) * s, 180 * s, 10 * s, 5 * s); ctx.fill();
+  };
+  card(96, "Card A", true);
+  card(460, "Card B", false);
+
+  // Save button — 40px gap below Card B (bug: spec says 24px).
+  ctx.fillStyle = "#2563EB";
+  rr(460 * s, 340 * s, 120 * s, 40 * s, 6 * s);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.font = `600 ${14 * s}px -apple-system, "Segoe UI", Arial, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Save", (460 + 60) * s, (340 + 20) * s);
+  return c;
+}
+
+// ── Burn-in at final resolution (constants mirror src/burnin.ts) ─────────────
+const ACCENT = "#d97706", HALO = "rgba(255,255,255,0.9)";
+const BADGE_R = 11, POINT_R = 8, STROKE = 2, LEADER_W = 1.5, BADGE_DIST = 22;
+const RECT_OUTSET = 2, ARROW_HEAD_LEN = 10, ARROW_HEAD_HALF = 4.5, LEADER_STOP = 3, BADGE_MARGIN = 2;
+const DIRS8 = [
+  [-Math.SQRT1_2, -Math.SQRT1_2], [Math.SQRT1_2, -Math.SQRT1_2],
+  [-Math.SQRT1_2, Math.SQRT1_2], [Math.SQRT1_2, Math.SQRT1_2],
+  [0, -1], [1, 0], [0, 1], [-1, 0],
+];
+
+function strokeHaloAccent(ctx, width) {
+  ctx.lineWidth = width + 2.5; ctx.strokeStyle = HALO; ctx.stroke();
+  ctx.lineWidth = width; ctx.strokeStyle = ACCENT; ctx.stroke();
+}
+
+// Simplified placement vs product (in-bounds + badge separation only; the
+// product adds anchor-clearance + ring 2 relaxation — unnecessary for 3 sparse markers).
+function placeBadge(ax, ay, W, H, placed) {
+  for (const dist of [BADGE_DIST, BADGE_DIST + 14]) {
+    for (const [dx, dy] of DIRS8) {
+      const x = ax + dx * dist, y = ay + dy * dist;
+      const inB = x - BADGE_R >= BADGE_MARGIN && y - BADGE_R >= BADGE_MARGIN &&
+        x + BADGE_R <= W - BADGE_MARGIN && y + BADGE_R <= H - BADGE_MARGIN;
+      const clear = placed.every((p) => (p.x - x) ** 2 + (p.y - y) ** 2 >= 24 * 24);
+      if (inB && clear) return { x, y };
+    }
+  }
+  return {
+    x: Math.min(Math.max(BADGE_R + BADGE_MARGIN, ax - BADGE_DIST * Math.SQRT1_2), W - BADGE_R - BADGE_MARGIN),
+    y: Math.min(Math.max(BADGE_R + BADGE_MARGIN, ay - BADGE_DIST * Math.SQRT1_2), H - BADGE_R - BADGE_MARGIN),
+  };
+}
+
+function drawMarkers(ctx, L) {
+  const fx = (v) => sceneToFinalF(v, L);
+  const anchors = MARKERS.map((a) =>
+    a.kind === "rect"
+      ? { ax: fx(a.x1) - RECT_OUTSET, ay: fx(a.y1) - RECT_OUTSET }
+      : { ax: fx(a.x1), ay: fx(a.y1) });
+
+  for (const a of MARKERS) {
+    if (a.kind === "point") {
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(fx(a.x1), fx(a.y1), POINT_R, 0, Math.PI * 2); // ring, never covers the target
+      strokeHaloAccent(ctx, STROKE);
+    } else if (a.kind === "rect") {
+      ctx.setLineDash([6, 4]); // dashed + outset so it's not mistaken for real UI
+      ctx.beginPath();
+      ctx.rect(fx(a.x1) - RECT_OUTSET, fx(a.y1) - RECT_OUTSET,
+        fx(a.x2) - fx(a.x1) + RECT_OUTSET * 2, fx(a.y2) - fx(a.y1) + RECT_OUTSET * 2);
+      strokeHaloAccent(ctx, STROKE);
+      ctx.setLineDash([]);
+    } else {
+      const x1 = fx(a.x1), y1 = fx(a.y1), x2 = fx(a.x2), y2 = fx(a.y2);
+      const len = Math.hypot(x2 - x1, y2 - y1);
+      const ux = (x2 - x1) / len, uy = (y2 - y1) / len;
+      const hbx = x2 - ux * ARROW_HEAD_LEN, hby = y2 - uy * ARROW_HEAD_LEN;
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(hbx, hby);
+      strokeHaloAccent(ctx, STROKE);
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(hbx - uy * ARROW_HEAD_HALF, hby + ux * ARROW_HEAD_HALF);
+      ctx.lineTo(hbx + uy * ARROW_HEAD_HALF, hby - ux * ARROW_HEAD_HALF);
+      ctx.closePath();
+      ctx.fillStyle = HALO; ctx.lineWidth = STROKE + 2.5; ctx.strokeStyle = HALO; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = ACCENT; ctx.lineWidth = STROKE; ctx.strokeStyle = ACCENT; ctx.fill(); ctx.stroke();
+    }
+  }
+
+  const placed = [];
+  anchors.forEach(({ ax, ay }, i) => {
+    const b = placeBadge(ax, ay, L.finalW, L.finalH, placed);
+    placed.push(b);
+    const d = Math.hypot(ax - b.x, ay - b.y);
+    if (d > BADGE_R + LEADER_STOP) {
+      const lux = (ax - b.x) / d, luy = (ay - b.y) / d;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(b.x + lux * BADGE_R, b.y + luy * BADGE_R);
+      ctx.lineTo(ax - lux * LEADER_STOP, ay - luy * LEADER_STOP);
+      strokeHaloAccent(ctx, LEADER_W);
+    }
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, BADGE_R, 0, Math.PI * 2);
+    ctx.fillStyle = ACCENT; ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "white"; ctx.stroke();
+    ctx.font = `bold 13px -apple-system, "Segoe UI", sans-serif`;
+    ctx.fillStyle = "white"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(String(i + 1), b.x, b.y + 0.5);
+  });
+}
+
+function renderFinal(L) {
+  const scene = renderScene(L);
+  const c = document.createElement("canvas");
+  c.width = L.finalW;
+  c.height = L.finalH;
+  const ctx = c.getContext("2d");
+  // Invariant 4: downscale FIRST, then burn markers at final resolution.
+  // Canvas "high" smoothing stands in for the product's Lanczos3 (§6.2).
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(scene, 0, 0, L.finalW, L.finalH);
+  drawMarkers(ctx, L);
+  return c;
+}
+
+// ── UI wiring ─────────────────────────────────────────────────────────────────
+const scenarioSel = document.getElementById("scenario");
+const profileSel = document.getElementById("profile");
+const pathSel = document.getElementById("pathstyle");
+const contextInput = document.getElementById("context");
+const infoEl = document.getElementById("info");
+const blockEl = document.getElementById("block");
+const preview = document.getElementById("preview");
+
+for (const [key, sc] of Object.entries(SCENARIOS)) {
+  const o = document.createElement("option");
+  o.value = key;
+  o.textContent = sc.label;
+  scenarioSel.append(o);
+}
+scenarioSel.value = "2560x1440";
+
+let finalCanvas = null;
+function refresh() {
+  const L = computeLayout(scenarioSel.value, profileSel.value);
+  finalCanvas = renderFinal(L);
+  preview.width = L.finalW;
+  preview.height = L.finalH;
+  preview.getContext("2d").drawImage(finalCanvas, 0, 0);
+  infoEl.textContent =
+    `저장 크기 ${L.finalW}×${L.finalH} · 축소율 ${L.f.toFixed(4)} · 비주얼 토큰 ${L.tokens}` +
+    ` · scale 계수 ${formatScale(L.scaleCoeff)} (OS ${L.osScale} × ${L.f.toFixed(4)})`;
+  blockEl.value = buildBlock(L, pathSel.value, contextInput.value);
+}
+for (const el of [scenarioSel, profileSel, pathSel]) el.addEventListener("change", refresh);
+contextInput.addEventListener("input", refresh);
+
+document.getElementById("download").addEventListener("click", () => {
+  finalCanvas.toBlob((blob) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `w0-fixture-${scenarioSel.value}.png`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }, "image/png");
+});
+
+refresh();
+</script>
+</body>
+</html>

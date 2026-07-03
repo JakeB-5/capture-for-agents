@@ -9,7 +9,8 @@
 - 릴리스 번들: `pnpm tauri build` → `.app` 9.8MB + DMG 3.5MB (aarch64, **ad-hoc 서명**). 도그푸딩은 릴리스 `.app`을 /Applications에 두고 쓰는 운용 권장(재빌드마다 TCC 재승인 리스크 회피).
 - 커밋 흐름: `dev` ← `feature/phase3-polish` `--no-ff` 머지 완료(`03aafc4`; Wave A `36030a4` → Wave B `b0a762d` → 문서 `c9e206b`). 원격: `https://github.com/JakeB-5/capture-for-agents` (퍼블릭, 기본 브랜치 dev — 이후 브랜치는 `push -u origin <branch>` + dev 대상 PR).
 - 코드 지도: `src/annotations|downscale|capnote|burnin|annotator.ts` + `src/main.ts` / `src-tauri/src/lib.rs`(커맨드 9종·트레이·GC 스레드) · `capture.rs`(스폰·pHYs 스케일·GC) · `settings.rs`(설정 로드/저장/라벨) · `macos.rs`(포커스 복귀)
-- **Windows 이식 계획서 작성 완료 (07-03)**: `docs/plan-windows.html` — 착수는 미결(문서 §12 결정 0~2: 착수 승인·검증 기기·소비 환경이 선행). W0 착수 세션은 그 문서를 단일 출처로 읽을 것. 참고: 계획 수립 중 Anthropic 비전 리사이즈가 "장변+비주얼 토큰 이중 제약"임이 확인됨 — 현행 macOS 다운스케일(1568 단일 규칙)의 백포트 여부는 별도 결정 항목(같은 문서 §6.2·§12).
+- **Windows 이식 계획서 작성 완료 (07-03)**: `docs/plan-windows.html` — W0 착수 세션은 그 문서를 단일 출처로 읽을 것.
+- **Phase W0 착수 (07-03, `feature/w0-spike`)**: §12 결정 0(착수 승인)은 사용자 지시로 해소. macOS에서 가능한 준비물 완료 — `spike/w0/` (공식 `resized_size()` 포트 · 테스트 12/12 · 번인 픽스처 · CapNote 붙여넣기 블록 5종 · winprobe 실측 바이너리) + `.github/workflows/windows-build.yml`(winprobe x64 아티팩트·프런트엔드 windows-latest 빌드). **잔여는 전부 Windows 실기기 검증** — 결정 1(기기 확보)·결정 2(네이티브/WSL 소비 환경) 대기. 절차: `spike/w0/README.md`, 기록처: `docs/w0-verification.md`(진행 중, §7에 macOS 사이드 확정 사실 3건 — 특히 참조 구현 반올림이 half-to-even이라 나이브 포팅 시 ±1px 드리프트). 참고: 계획 수립 중 Anthropic 비전 리사이즈가 "장변+비주얼 토큰 이중 제약"임이 확인됨 — 현행 macOS 다운스케일(1568 단일 규칙)의 백포트 여부는 별도 결정 항목(같은 문서 §6.2·§12).
 
 ## 2. 보류 1건 (해제 조건 명시)
 

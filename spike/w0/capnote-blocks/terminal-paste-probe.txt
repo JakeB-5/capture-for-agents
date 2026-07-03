@@ -1,0 +1,17 @@
+```capnote v1
+image: C:\Users\YOURNAME\.capnote\w0-fixture-2560x1440.png
+size: 1456x819
+scale: 0.71 image px = 1 CSS px
+source: screen capture @1.25x, downscaled to 1456x819 (2026-07-03 12:00)
+context: W0 터미널 매트릭스 프로브 — 멀티라인 한 덩어리 도착·개행 보존·한글 mojibake 확인용 (§7.3)
+[1] rect (459,120)-(779,300)
+    겹받침·쌍자음 보존 확인: 값, 닭, 몫, 앉다, 핥다, 뷁 — 됐습니다/않습니다까지 깨지지 않아야 함.
+    이 줄은 노트 두 번째 줄 — 4칸 들여쓰기가 유지되는지 확인.
+
+[2] arrow (519,300)->(519,340)
+    바로 위 빈 줄이 삭제되지 않고 도착해야 함 (빈 줄 보존 프로브).
+    특수문자 혼합: ⌘V→Ctrl+V, ±1px, ≤1568, "따옴표"와 '홑따옴표', 백틱 아님.
+[3] point (1107,32)
+    마지막 줄까지 잘리지 않고 한 번의 붙여넣기로 도착하면 통과 — 줄 수: 펜스 포함 17줄.
+hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left); px values in notes are CSS px.
+```
