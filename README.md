@@ -1,125 +1,109 @@
 # Capture for Agents
 
-AI 코딩 에이전트에게 시각적 피드백을 정확하게 전달하는 macOS 스크린샷 캡처 + 어노테이션 도구.
+**English** | [한국어](README.ko.md)
 
-> **상태: ✅ Phase 3 완료 (2026-07-03) — 배포 가능 빌드.** 캡처 → 어노테이션 → ⌘V 전 루프 실기기 검증, 히스토리·설정·릴리스 DMG(ad-hoc 서명)까지 완료. 공증(계정)·멀티모니터 실측(환경)만 보류. 상세 작업계획서는 [docs/plan.html](docs/plan.html)에 있습니다.
+A macOS screenshot capture + annotation tool that delivers visual feedback to AI coding agents — precisely.
+
+> **Status: ✅ Phase 3 complete (2026-07-03) — distributable build.** The full loop (capture → annotate → ⌘V) is verified end-to-end on a real device, including history, settings, and a release DMG (ad-hoc signed). Notarization (no Apple Developer account yet) and multi-monitor field testing (single-monitor environment) are the only deferred items. The detailed work plan lives in [docs/plan.html](docs/plan.html) (Korean).
 
 ---
 
-## 왜 필요한가
+## Why
 
-Figma 시안을 Claude Code로 구현했는데, 결과물을 보니 디테일이 어긋나 있습니다. 카드에 1px 보더가 빠졌고, 버튼 위 마진이 24px여야 하는데 12px이고, 아이콘이 한 사이즈 작게 렌더링됩니다.
+You implemented a Figma design with Claude Code, and the result is subtly off: a card is missing its 1px border, a margin that should be 24px is 12px, an icon renders one size too small.
 
-이걸 에이전트에게 어떻게 전달할까요?
+How do you tell the agent?
 
-- 스크린샷을 그냥 던지면 에이전트는 **"어디"를 말하는지 모릅니다.** 화면 어딘가에 문제가 있다는 것까지는 알아도, 세 군데 중 어느 카드의 어느 변을 말하는지 좌표 감각만으로 특정하기 어렵습니다.
-- 텍스트로만 쓰면 "카드 보더가 빠졌어"가 어느 카드인지, 어떤 보더인지 장황하게 다시 설명해야 합니다.
+- Throw a raw screenshot at it and the agent doesn't know **where** you mean. It can tell something is wrong somewhere, but pinpointing *which card, which edge* from coordinate intuition alone is unreliable.
+- Describe it in words only, and you're writing paragraphs to disambiguate "the card border is missing."
 
-시각 정보와 의미 정보가 따로 놀기 때문입니다.
+Visual information and semantic information travel separately — that's the problem.
 
-Capture for Agents의 해법은 **번호 라벨 + 부연설명 + 이중 채널**입니다.
+Capture for Agents solves it with **numbered labels + notes + a dual channel**:
 
-- 캡처한 이미지 위에 번호 배지가 달린 마커·사각형·화살표를 찍고(시각 채널),
-- 각 번호에 자유 텍스트 노트를 붙여(의미 채널),
-- 두 채널을 같은 번호로 묶은 **CapNote v1** 텍스트 블록을 클립보드에 넣습니다.
+- Drop numbered markers, rectangles, and arrows onto the captured image (visual channel),
+- attach a free-text note to each number (semantic channel),
+- and put a single **CapNote v1** text block on the clipboard that joins both channels by number.
 
-에이전트는 텍스트에서 이미지 경로를 읽어 파일을 직접 열고, 이미지에 번인된 번호 `[1] [2] [3]`과 텍스트의 좌표+노트를 대조합니다. "정확히 어디를 어떻게" 고칠지가 ⌘V 한 번에 도착합니다.
+The agent reads the image path from the text, opens the file directly, and matches the burned-in numbers `[1] [2] [3]` against the coordinates + notes in the text. "Exactly where, exactly what to fix" arrives in one ⌘V.
 
-## 어떻게 동작하나
+## How it works
 
-1. **⌥⇧C** — 전역 단축키로 캡처 시작 (메뉴바 상주, 콜드 스타트 없음).
-2. **드래그로 영역 선택** — 또는 Space 키로 창 선택 모드 전환, ESC로 취소 (macOS 기본 `screencapture` UI 그대로).
-3. **클릭·드래그로 라벨 + 노트** — 캡처 직후 열리는 어노테이션 창에서 클릭 = 번호 마커, 드래그 = 사각형, Shift+드래그 = 화살표. 놓는 즉시 인라인 노트 입력이 포커스되어 타이핑 → Enter.
-4. **⌘Enter** — 원샷 커밋: 번인 렌더 → 1568px 다운스케일 → PNG 저장 → CapNote 텍스트 클립보드 복사 → 창이 닫히고 직전 앱으로 포커스 복귀.
-5. **터미널에서 ⌘V** — Claude Code에 붙여넣기. 끝.
+1. **⌥⇧C** — global shortcut starts a capture (menubar-resident, no cold start; shortcut is configurable).
+2. **Drag to select a region** — or press Space for window mode, ESC to cancel (native macOS `screencapture` UI).
+3. **Click/drag to label + note** — in the annotation window that opens right after capture: click = numbered marker, drag = rectangle, Shift+drag = arrow. The inline note input focuses immediately; type → Enter.
+4. **⌘Enter** — one-shot commit: burn-in render → downscale to ≤1568px → save PNG → copy the CapNote text block → window closes and focus returns to your previous app.
+5. **⌘V in the terminal** — paste into Claude Code. Done.
 
-목표 체감 속도는 마커 1개 피드백 약 5초, 3개 약 10초입니다.
+Target feel: ~5 seconds for a one-marker feedback, ~10 seconds for three.
 
 ## CapNote v1
 
-클립보드에 들어가는 것은 아래와 같은 플레인 텍스트 블록 하나입니다.
+What lands on the clipboard is a single plain-text block:
 
 ```capnote v1
 image: /Users/jin/.capnote/2026-07-02-164812.png
 size: 1246x820
 scale: 1 image px = 1 CSS px
 source: region capture @2x, downscaled 1/2 (2026-07-02 16:48)
-context: Figma 시안 대비 카드 컴포넌트 디테일 미반영 3건
-[1] rect (288,120)-(456,214) "상품 카드"
-    카드에 1px solid #E5E7EB 보더가 빠져 있음. Figma에는 있는데 구현에 없음.
-[2] arrow (524,412)->(524,468) "카드 → 저장 버튼"
-    카드와 하단 버튼 사이 마진이 시안은 24px인데 구현은 12px. 24px로 수정.
-[3] point (1108,96) "헤더 설정 아이콘"
-    이 아이콘이 시안 기준 20x20인데 지금 16x16으로 렌더링됨.
+context: Card component details missing vs. the Figma design (3 items)
+[1] rect (288,120)-(456,214) "product card"
+    The card is missing its 1px solid #E5E7EB border. Present in Figma, absent in the build.
+[2] arrow (524,412)->(524,468) "card → save button"
+    The margin between the card and the button below is 24px in the design but 12px here. Change to 24px.
+[3] point (1108,96) "header settings icon"
+    This icon should be 20x20 per the design but renders at 16x16.
 hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left); px values in notes are CSS px.
 ```
 
-### 문법 요약
+### Grammar summary
 
-| 요소 | 형식 | 비고 |
+| Element | Form | Notes |
 | --- | --- | --- |
-| 헤더 | `image:` PNG 절대 경로 / `size:` WxH / `scale:` px 비율 / `source:` 캡처 메타(선택) / `context:` 한 줄 요약(선택) | `size`가 곧 좌표 공간, `scale`은 표준 정책상 항상 1:1 |
-| 마커 | `[n] point (x,y)` | 번호 마커 |
-| 사각형 | `[n] rect (x1,y1)-(x2,y2)` | |
-| 화살표 | `[n] arrow (x1,y1)->(x2,y2)` | 꼬리→머리 방향 |
-| 라벨 | 좌표 뒤 `"…"` (선택) | 대상 요소의 가시 텍스트 라벨. 없어도 하위 호환 |
-| 노트 | 마커 라인 다음 줄, 4칸 들여쓰기 자유 텍스트 | 멀티라인 허용, 선택 |
-| hint | 마지막 줄, 에이전트 행동 지시 1줄 (영어) | |
+| Header | `image:` absolute PNG path / `size:` WxH / `scale:` px ratio / `source:` capture meta (optional) / `context:` one-line summary (optional) | `size` **is** the coordinate space; `scale` is always 1:1 under the standard downscale policy |
+| Marker | `[n] point (x,y)` | numbered point marker |
+| Rectangle | `[n] rect (x1,y1)-(x2,y2)` | |
+| Arrow | `[n] arrow (x1,y1)->(x2,y2)` | tail → head |
+| Label | `"…"` after coordinates (optional) | visible text of the target element; backward compatible when absent |
+| Note | next line(s), indented 4 spaces | free text, multiline, optional |
+| hint | last line, one agent instruction (English) | |
 
-정규식 한 줄로 기계 파싱이 가능하면서 사람이 그대로 읽을 수 있고, 비전 없는 모델도 좌표+노트만으로 동작합니다.
+Machine-parseable with a single regex, readable as-is by humans, and usable by vision-less models from coordinates + notes alone.
 
-### 왜 클립보드가 텍스트 전용인가
+### Why the clipboard is text-only
 
-Claude Code에서 이미지 붙여넣기는 macOS에서 ⌘V가 아닌 Ctrl+V라는 함정이 있고, 이미지만 붙이면 의미 채널(노트)이 따로 전달되어야 합니다. 대신 번인된 PNG를 파일로 저장하고 절대 경로를 텍스트에 포함하면, 에이전트가 Read 도구로 이미지를 직접 읽습니다. 사용자는 ⌘V 한 번으로 시각 채널과 의미 채널을 동시에 전달합니다.
+In Claude Code on macOS, pasting an *image* is Ctrl+V, not ⌘V — a habit trap where the image silently vanishes. And an image alone carries no semantics. Instead, the burned-in PNG is saved to a file and its absolute path is embedded in the text: the agent reads the image itself with its Read tool. One ⌘V delivers the visual channel and the semantic channel simultaneously.
 
-## 핵심 설계 불변식
+## Core design invariants
 
-1. **클립보드는 텍스트 전용.** 이미지는 파일로 저장하고 절대 경로를 텍스트에 포함 — 에이전트가 직접 읽는다.
-2. **좌표계는 단 하나** — "저장된 최종 이미지의 픽셀"(원점 좌상단). 헤더 `size`가 좌표 공간을 선언하며, 원본 Retina 좌표는 절대 노출하지 않는다.
-3. **장변 ≤ 1568px PNG.** Anthropic 비전 API의 리사이즈 임계값 이하로 저장해 모델이 보는 픽셀 = 텍스트 좌표 공간이 정확히 1:1. Retina @2x는 1/2 축소, 작은 크롭은 네이티브 유지. JPEG 금지, 업스케일 금지.
-4. **번인은 필수, 단 다운스케일 후 최종 해상도에서 렌더링.** 번호 배지는 대상 픽셀을 가리지 않게 8~12px 오프셋 + 리더 라인, rect는 점선+2px 아웃셋, point는 링 — 주석이 실제 UI로 오인되지 않게. 노트 본문은 번인하지 않는다(텍스트 채널이 담당).
-5. **마커·사각형·화살표가 하나의 자동 증가 번호 시퀀스를 공유.** 이 번호가 시각 채널과 의미 채널을 잇는 join key — 에이전트의 좌표 해석 정밀도에 의존하지 않는 이중 앵커링.
+1. **The clipboard is text-only.** Images are saved as files with their absolute path embedded in the text — the agent reads them directly.
+2. **Exactly one coordinate space** — the pixels of the saved final image (origin top-left). The `size` header declares the space; original Retina coordinates are never exposed.
+3. **PNG with long edge ≤ 1568px.** Below the Anthropic vision API resize threshold, so the pixels the model sees map 1:1 to the text's coordinate space. Retina @2x is halved; small crops stay native. No JPEG, no upscaling.
+4. **Burn-in is mandatory, rendered at final resolution after downscaling.** Number badges sit 8–12px off-target with a leader line; rects are dashed with a 2px outset; points are rings — so annotations are never mistaken for real UI. Note text is never burned in (that's the text channel's job).
+5. **Markers, rectangles, and arrows share one auto-incrementing number sequence.** The number is the join key between the two channels — double anchoring that doesn't depend on the agent's coordinate-reading precision.
 
-## 로드맵
+## Roadmap
 
-| Phase | 목표 | 예상 active-day |
+| Phase | Goal | Est. active-days |
 | --- | --- | --- |
-| 0 | ✅ **완료 (2026-07-02)** 포맷 검증 스파이크 — 블라인드 에이전트 6개로 E2E 검증(마커 지목 9/9), 스펙 동결. [검증 리포트](docs/phase0-verification.md) | 0.5d |
-| 1 | ✅ **완료 (2026-07-02)** 워킹 스켈레톤 — Tauri v2 메뉴바 앱, 전역 단축키 ⌥⇧C, screencapture 래퍼, 경로-only 클립보드, 포커스 복귀, TCC 온보딩. 캡처→⌘V 루프 실기기 완주 | 1~2d |
-| 2 | ✅ **완료 (2026-07-02)** 어노테이션 + CapNote — 스마트 툴 3종+단일 번호 시퀀스, 인라인 노트, 번인 렌더러, 1568px 다운스케일, CapNote v1 인코더, 파일 GC. 실기기 E2E + 블라인드 지목 검증. [검증 리포트](docs/phase2-verification.md) | 2~3d |
-| 3 | ✅ **완료 (2026-07-03)** 폴리싱·견고화 — 창 표시 속도, 키보드-온리, 히스토리 10건(재복사/재어노테이션), 배지 충돌 회피, 싱글 인스턴스, 설정(단축키/경로/보존), 터미널 3종 실측, 지목 정확도 평가, 릴리스 DMG(ad-hoc). 공증·멀티모니터 실측 보류. [검증 리포트](docs/phase3-verification.md) | 2~3d |
-| 4 | 백로그 — 히스토리 팔레트, capnote CLI / MCP 서버 모드, 크로스플랫폼 (필요 실증 시에만) | — |
+| 0 | ✅ **Done (2026-07-02)** Format validation spike — E2E with 6 blind agents (9/9 marker identification), spec frozen. [Report](docs/phase0-verification.md) (Korean) | 0.5d |
+| 1 | ✅ **Done (2026-07-02)** Working skeleton — Tauri v2 menubar app, global shortcut, screencapture wrapper, path-only clipboard, focus restore, TCC onboarding | 1–2d |
+| 2 | ✅ **Done (2026-07-02)** Annotation + CapNote — smart tools with a single number sequence, inline notes, burn-in renderer, 1568px downscale pipeline, encoder, file GC. [Report](docs/phase2-verification.md) (Korean) | 2–3d |
+| 3 | ✅ **Done (2026-07-03)** Polish & hardening — window-show speed, keyboard-only flow, 10-entry history (re-copy/re-annotate), badge collision avoidance, single instance, settings, 3-terminal paste tests, agent accuracy eval, release DMG (ad-hoc). [Report](docs/phase3-verification.md) (Korean) | 2–3d |
+| 4 | Backlog — history palette, capnote CLI / MCP server mode, cross-platform (only if demand proves out) | — |
 
-합계 약 5.5~8.5 active-day. 산정 근거(작업 믹스·레버리지·앵커)를 포함한 상세 계획은 [docs/plan.html](docs/plan.html)을 참고하세요.
+## Development
 
-Phase 0이 가장 먼저인 이유는 명확합니다 — 앱을 한 줄도 만들기 전에, 셸 스크립트와 스로어웨이 HTML 캔버스로 CapNote 블록을 수동 생성해 실제 Claude Code에 붙여넣어 봅니다. 에이전트가 이미지를 Read하고 마커 3종을 정확히 해석하는지 E2E로 확인한 뒤에야 스펙을 동결합니다. **가장 싼 시점에 가장 큰 가설을 검증**하는 구조입니다.
+- **Stack**: Tauri v2 menubar-resident app. The annotation UI (95% of the product) is TypeScript + Canvas 2D; Rust is a thin shell (official global-shortcut / clipboard-manager plugins + a few dozen lines spawning `screencapture`).
+- **Capture**: spawns `/usr/sbin/screencapture -i -x -o -t png <tmpfile>` — drag selection, window mode, and ESC cancel come for free, no custom overlay.
+- **Storage**: `~/.capnote/YYYY-MM-DD-HHMMSS.png` (configurable), auto-GC after 14 days or beyond 500 files (configurable).
+- **Permissions**: one-time TCC "Screen Recording" approval. Onboarding verifies actual pixels of a test capture. In dev mode the permission attaches to your terminal/IDE, not the app.
+- **Footprint**: ~10MB binary, ~30MB resident memory, no cold start.
 
-## 주요 리스크
+Build & run: `pnpm install`, then `pnpm tauri dev` (development) / `pnpm tauri build` (release bundle). Verification: `pnpm check` (tsc) · `pnpm lint` (eslint) · `cargo check` in `src-tauri/`.
 
-설계 단계에서 식별한 리스크와 대응 방향입니다. 상세 분석은 [docs/plan.html](docs/plan.html)에 있습니다.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and the rules that keep the frozen spec intact.
 
-1. **TCC 화면 기록 권한 거동** — dev 빌드 서명 변경 시 권한 리셋, macOS 15+ 주기적 재승인, 미승인 시 창이 누락된 이미지가 조용히 반환됨 → Phase 1 실기기 검증 + 온보딩 픽셀 검증 + 안정적 자가서명 인증서.
-2. **좌표 공간 불일치 (Retina/멀티모니터)** — 좌표는 오직 저장본 픽셀, 크기는 PNG 실측값 사용을 불변식으로 고정.
-3. **다운스케일이 보고 대상인 1px 디테일을 지울 수 있음** — 작은 크롭은 @2x 네이티브 유지로 완화, 전체 창 캡처에서는 잔존.
-4. **에이전트가 hint를 무시하거나 이미지 px를 CSS px로 오인** — hint 문구 명시 + Phase 3 정확도 평가로 튜닝, 완전 제거는 불가.
-5. **번인 배지가 밀집 어노테이션에서 겹치거나 대상을 가림** — 오프셋 + 리더 라인으로 완화, 충돌 회피 배치는 Phase 3.
-6. **터미널 멀티라인 붙여넣기 엣지** (bracketed paste 부재 셸) — Claude Code는 문제없으나 iTerm2/Terminal/VS Code 3종 실측, 노트 소프트 리밋.
-7. **Tauri v2 플러그인의 macOS 신버전 회귀** — 버전 핀 + 트레이 폴백 + Electron 탈출 조건(플러그인 엣지 케이스로 2 active-day 이상 소모 시 전환).
-8. **외부 가정 결합** — Anthropic 비전 1568px 규칙, Claude Code의 Ctrl+V/경로 Read 거동이 변경되면 정책 재검토.
+## License
 
-## 개발
-
-- **스택**: Tauri v2 메뉴바 상주 앱. 어노테이션 UI(제품의 95%)는 TypeScript + Canvas 2D, Rust는 얇은 셸(공식 플러그인 global-shortcut·clipboard-manager + `screencapture` 프로세스 스폰).
-- **캡처**: `/usr/sbin/screencapture -i -x -o -t png <tmpfile>` 스폰 — 자체 오버레이 없이 드래그 선택·창 선택·ESC 취소를 얻는다.
-- **저장**: `~/.capnote/YYYY-MM-DD-HHMMSS.png` (경로 설정 가능), 14일 경과 또는 500개 초과분 자동 정리.
-- **전역 단축키**: 기본 ⌥⇧C (설정 가능). 등록 실패 감지 시 대체 키 제안 + 트레이 메뉴 폴백.
-- **권한**: TCC "화면 기록" 1회 승인 필요. 온보딩에서 테스트 캡처의 픽셀 검증 수행. dev 모드에서는 권한이 터미널/IDE에 귀속되는 점에 주의.
-- **목표 풋프린트**: 바이너리 ~10MB, 상주 메모리 ~30MB, 콜드 스타트 없음.
-
-빌드·실행: `pnpm install` 후 `pnpm tauri dev`(개발) / `pnpm tauri build`(릴리스 번들). 검증은 `pnpm check`(tsc) · `pnpm lint`(eslint) · `src-tauri/`에서 `cargo check`.
-
-Swift 네이티브가 아닌 Tauri를 선택한 이유: 이 제품의 95%는 캔버스 기반 어노테이션 UI이고, 이는 1인 TypeScript 개발자의 주력 언어 안에서 가장 빠르게 만들 수 있습니다. Rust 쪽은 공식 플러그인과 프로세스 스폰 수십 줄에 불과합니다. 만약 Tauri 플러그인 엣지 케이스로 2 active-day 이상을 소모하면 Electron으로 전환합니다 — 아키텍처가 "웹뷰 UI + CLI 셸아웃"이라 1:1 호환됩니다.
-
----
-
-*산문은 한국어, 코드·CLI·포맷 키워드는 영어로 표기합니다.*
+[MIT](LICENSE)
