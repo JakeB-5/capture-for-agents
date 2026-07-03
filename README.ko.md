@@ -37,6 +37,10 @@ Capture for Agents의 해법은 **번호 라벨 + 부연설명 + 이중 채널**
 
 목표 체감 속도는 마커 1개 피드백 약 5초, 3개 약 10초입니다.
 
+![전체 사용 루프 — 단축키 한 번에서 시작해, 사용자가 마지막에 하는 일은 터미널에서 ⌘V 하나뿐](docs/img/usage-loop.ko.svg)
+
+![어노테이션 창 목업 — 번호 배지(오프셋+리더 라인), 사각형·화살표·점 마커, 인라인 노트 팝오버](docs/img/annotation-window.ko.svg)
+
 ## CapNote v1
 
 클립보드에 들어가는 것은 아래와 같은 플레인 텍스트 블록 하나입니다.
@@ -55,6 +59,8 @@ context: Figma 시안 대비 카드 컴포넌트 디테일 미반영 3건
     이 아이콘이 시안 기준 20x20인데 지금 16x16으로 렌더링됨.
 hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left); px values in notes are CSS px.
 ```
+
+![CapNote 이중 채널 — 하나의 ⌘V가 시각 채널(PNG)과 의미 채널(텍스트)로 갈라졌다가 에이전트 안에서 번호 n으로 다시 만난다](docs/img/dual-channel.ko.svg)
 
 ### 문법 요약
 
@@ -81,6 +87,8 @@ Claude Code에서 이미지 붙여넣기는 macOS에서 ⌘V가 아닌 Ctrl+V라
 3. **장변 ≤ 1568px PNG.** Anthropic 비전 API의 리사이즈 임계값 이하로 저장해 모델이 보는 픽셀 = 텍스트 좌표 공간이 정확히 1:1. Retina @2x는 1/2 축소, 작은 크롭은 네이티브 유지. JPEG 금지, 업스케일 금지.
 4. **번인은 필수, 단 다운스케일 후 최종 해상도에서 렌더링.** 번호 배지는 대상 픽셀을 가리지 않게 8~12px 오프셋 + 리더 라인, rect는 점선+2px 아웃셋, point는 링 — 주석이 실제 UI로 오인되지 않게. 노트 본문은 번인하지 않는다(텍스트 채널이 담당).
 5. **마커·사각형·화살표가 하나의 자동 증가 번호 시퀀스를 공유.** 이 번호가 시각 채널과 의미 채널을 잇는 join key — 에이전트의 좌표 해석 정밀도에 의존하지 않는 이중 앵커링.
+
+![좌표계·다운스케일 정책 — 2492x1640 @2x 원본을 1/2로 줄여 저장하면 모델이 보는 픽셀과 텍스트 좌표가 정확히 1:1](docs/img/coordinate-policy.ko.svg)
 
 ## 로드맵
 
@@ -117,6 +125,8 @@ Phase 0이 가장 먼저인 이유는 명확합니다 — 앱을 한 줄도 만�
 - **전역 단축키**: 기본 ⌥⇧C (설정 가능). 등록 실패 감지 시 대체 키 제안 + 트레이 메뉴 폴백.
 - **권한**: TCC "화면 기록" 1회 승인 필요. 온보딩에서 테스트 캡처의 픽셀 검증 수행. dev 모드에서는 권한이 터미널/IDE에 귀속되는 점에 주의.
 - **목표 풋프린트**: 바이너리 ~10MB, 상주 메모리 ~30MB, 콜드 스타트 없음.
+
+![시스템 아키텍처 — Rust는 OS 연결부만 담당하는 얇은 셸, 제품의 실체는 웹뷰 안의 TypeScript Canvas 어노테이터](docs/img/architecture.ko.svg)
 
 빌드·실행: `pnpm install` 후 `pnpm tauri dev`(개발) / `pnpm tauri build`(릴리스 번들). 검증은 `pnpm check`(tsc) · `pnpm lint`(eslint) · `src-tauri/`에서 `cargo check`.
 

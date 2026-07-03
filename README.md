@@ -37,6 +37,10 @@ The agent reads the image path from the text, opens the file directly, and match
 
 Target feel: ~5 seconds for a one-marker feedback, ~10 seconds for three.
 
+![The full usage loop — starts with one shortcut; the only action left to the user is one ⌘V in the terminal](docs/img/usage-loop.svg)
+
+![Annotation window mockup — numbered badges with leader lines, rect/arrow/point markers, and the inline note popover](docs/img/annotation-window.svg)
+
 ## CapNote v1
 
 What lands on the clipboard is a single plain-text block:
@@ -55,6 +59,8 @@ context: Card component details missing vs. the Figma design (3 items)
     This icon should be 20x20 per the design but renders at 16x16.
 hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left); px values in notes are CSS px.
 ```
+
+![CapNote dual channel — one ⌘V splits into the visual channel (PNG) and the semantic channel (text), rejoined inside the agent by the number n](docs/img/dual-channel.svg)
 
 ### Grammar summary
 
@@ -82,6 +88,8 @@ In Claude Code on macOS, pasting an *image* is Ctrl+V, not ⌘V — a habit trap
 4. **Burn-in is mandatory, rendered at final resolution after downscaling.** Number badges sit 8–12px off-target with a leader line; rects are dashed with a 2px outset; points are rings — so annotations are never mistaken for real UI. Note text is never burned in (that's the text channel's job).
 5. **Markers, rectangles, and arrows share one auto-incrementing number sequence.** The number is the join key between the two channels — double anchoring that doesn't depend on the agent's coordinate-reading precision.
 
+![Coordinate space and downscale policy — halving a 2492x1640 @2x original to 1246x820 makes the pixels the model sees map 1:1 to the text coordinates](docs/img/coordinate-policy.svg)
+
 ## Roadmap
 
 | Phase | Goal | Est. active-days |
@@ -99,6 +107,8 @@ In Claude Code on macOS, pasting an *image* is Ctrl+V, not ⌘V — a habit trap
 - **Storage**: `~/.capnote/YYYY-MM-DD-HHMMSS.png` (configurable), auto-GC after 14 days or beyond 500 files (configurable).
 - **Permissions**: one-time TCC "Screen Recording" approval. Onboarding verifies actual pixels of a test capture. In dev mode the permission attaches to your terminal/IDE, not the app.
 - **Footprint**: ~10MB binary, ~30MB resident memory, no cold start.
+
+![System architecture — Rust is a thin OS shell; the real product is the TypeScript Canvas annotator inside the webview](docs/img/architecture.svg)
 
 Build & run: `pnpm install`, then `pnpm tauri dev` (development) / `pnpm tauri build` (release bundle). Verification: `pnpm check` (tsc) · `pnpm lint` (eslint) · `cargo check` in `src-tauri/`.
 
