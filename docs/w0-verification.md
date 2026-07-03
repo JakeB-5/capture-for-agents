@@ -15,7 +15,7 @@
 
 - [ ] 실기기/VM에 Rust MSVC 툴체인 + pnpm + Claude Code(네이티브·WSL) 설치
 - [x] GitHub Actions `windows-latest` 워크플로 골격 (`windows-build.yml`) — winprobe x64 아티팩트 + 프런트엔드 빌드
-  - CI 실행 결과: _(run URL·결과 기입)_
+  - CI 실행 결과: ✅ 양 잡 성공 (2026-07-03, https://github.com/JakeB-5/capture-for-agents/actions/runs/28634331343) — `winprobe-x64` 아티팩트 생성(457KB), 프런트엔드 `pnpm check`+`vite build`+`resized_size()` 테스트 windows-latest에서 통과
 - 기기 정보: _(모델 · Windows 버전 · 모니터 구성/배율 기입)_
 
 ## 2. Claude Code 경로 E2E (체크리스트 2) → pathStyle 기본값 확정
