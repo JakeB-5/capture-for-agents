@@ -1,6 +1,6 @@
 # HANDOFF — Phase 0~3 완료 · 도그푸딩 체제 (갱신: 2026-07-03)
 
-> 신규 세션은 이 파일 → `CLAUDE.md` → `docs/plan.html` 순으로 읽는다. **로드맵상 필수 작업은 남아 있지 않다** — 이후 작업은 (a) 도그푸딩에서 나온 개선, (b) 보류 2건 해제, (c) Phase 4 백로그(필요 실증 시에만) 중 하나다.
+> 신규 세션은 이 파일 → `CLAUDE.md` → `docs/plan.html` 순으로 읽는다. **로드맵상 필수 작업은 남아 있지 않다** — 이후 작업은 (a) 도그푸딩에서 나온 개선, (b) 보류 1건(공증) 해제, (c) Phase 4 백로그(필요 실증 시에만) 중 하나다.
 
 ## 1. 현재 상태
 
@@ -10,10 +10,10 @@
 - 커밋 흐름: `dev` ← `feature/phase3-polish` `--no-ff` 머지 완료(`03aafc4`; Wave A `36030a4` → Wave B `b0a762d` → 문서 `c9e206b`). 원격: `https://github.com/JakeB-5/capture-for-agents` (퍼블릭, 기본 브랜치 dev — 이후 브랜치는 `push -u origin <branch>` + dev 대상 PR).
 - 코드 지도: `src/annotations|downscale|capnote|burnin|annotator.ts` + `src/main.ts` / `src-tauri/src/lib.rs`(커맨드 9종·트레이·GC 스레드) · `capture.rs`(스폰·pHYs 스케일·GC) · `settings.rs`(설정 로드/저장/라벨) · `macos.rs`(포커스 복귀)
 
-## 2. 보류 2건 (해제 조건 명시)
+## 2. 보류 1건 (해제 조건 명시)
 
 1. **공증(notarization)** — Apple Developer 계정($99/yr) 확보 시: 서명 identity 발급 → `tauri.conf.json` `bundle.macOS.signingIdentity` + notarytool 파이프라인. 그 전까지 ad-hoc DMG로 충분(본인 기기 사용).
-2. **멀티모니터 좌표 실측** — 외부 모니터 연결 환경이 생기면: @1x/@2x 혼합에서 캡처 → 마커 좌표를 PNG 실측으로 확인. 코드는 화면이 아니라 **캡처 PNG의 pHYs**로 스케일을 읽으므로 이론상 대응돼 있음(불변식 2·3의 구현 방식).
+~~2. 멀티모니터 좌표 실측~~ — **2026-07-03 해제**: 외부 4K(@2x HiDPI) 모니터 캡처로 실측 통과 (pHYs 스케일 감지 정확·좌표 픽셀 일치·블라인드 4/4, `docs/phase3-verification.md` §1 #4). @1x 외부 모니터 케이스는 접하면 같은 방식으로 확인.
 
 ## 3. 누적 실측 발견 (재발 방지 노트)
 
