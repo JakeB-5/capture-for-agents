@@ -1,4 +1,4 @@
-# Contributing to Capture for Agents
+# Contributing to Yeogiyo!! (여기요!!)
 
 Thanks for your interest! This is a small, opinionated tool with a **frozen wire format** at its core. Most contribution friction comes from not knowing which parts are frozen and which are open — this document makes that explicit.
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트
 
-**Capture for Agents** — AI 코딩 에이전트(터미널의 Claude Code 등)에게 시각적 피드백을 정확하게 전달하는 macOS 스크린샷 캡처+어노테이션 도구. 캡처 → 번호 마커/사각형/화살표 + 노트 → ⌘V 한 번으로 "정확히 어디를 어떻게" 전달. 포맷명: **CapNote v1**.
+**여기요!!** (영문 표기 Yeogiyo!!, 구 Capture for Agents) — AI 코딩 에이전트(터미널의 Claude Code 등)에게 시각적 피드백을 정확하게 전달하는 macOS 스크린샷 캡처+어노테이션 도구. 캡처 → 번호 마커/사각형/화살표 + 노트 → ⌘V 한 번으로 "정확히 어디를 어떻게" 전달. 포맷명: **CapNote v1**.
 
 **현재 상태: Phase 1 워킹 스켈레톤 완료 (2026-07-02, 캡처→⌘V 루프 실기기 검증).** 작업계획서는 `docs/plan.html`. 구현 전 반드시 그 문서를 먼저 읽을 것. Phase 0 포맷 검증은 완료(`docs/phase0-verification.md`, 마커 지목 9/9) — **CapNote v1 스펙은 동결됨**. 문법 변경은 v1.1 제안으로만.
 

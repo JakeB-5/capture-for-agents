@@ -1,8 +1,10 @@
-# Capture for Agents
+# Yeogiyo!! (여기요!!)
 
 **English** | [한국어](README.ko.md)
 
 A macOS screenshot capture + annotation tool that delivers visual feedback to AI coding agents — precisely.
+
+*Yeogiyo!!* (여기요!!) is Korean for calling out **"over HERE!!"** — the feeling of pointing a finger at the screen: *"the fix goes right here!!"* (formerly *Capture for Agents*)
 
 > **Status: ✅ Phase 3 complete (2026-07-03) — distributable build.** The full loop (capture → annotate → ⌘V) is verified end-to-end on a real device, including history, settings, and a release DMG (ad-hoc signed). Notarization (no Apple Developer account yet) and multi-monitor field testing (single-monitor environment) are the only deferred items. The detailed work plan lives in [docs/plan.html](docs/plan.html) (Korean).
 
@@ -19,7 +21,7 @@ How do you tell the agent?
 
 Visual information and semantic information travel separately — that's the problem.
 
-Capture for Agents solves it with **numbered labels + notes + a dual channel**:
+Yeogiyo!! solves it with **numbered labels + notes + a dual channel**:
 
 - Drop numbered markers, rectangles, and arrows onto the captured image (visual channel),
 - attach a free-text note to each number (semantic channel),

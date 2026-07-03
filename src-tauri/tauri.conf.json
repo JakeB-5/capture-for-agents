@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Capture for Agents",
+  "productName": "여기요!!",
   "version": "0.1.0",
   "identifier": "com.jin.capture-for-agents",
   "build": {
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Capture for Agents",
+        "title": "여기요!!",
         "width": 560,
         "height": 420,
         "visible": false,
