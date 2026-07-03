@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>여기요!! — Windows 버전 작업계획서 (설계 단계 v1)</title>
+<style>
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: #f1f5f9;
+    color: #1f2937;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  header.doc, main { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+  header.doc { padding-top: 44px; padding-bottom: 4px; }
+  h1 { font-size: 30px; line-height: 1.3; margin: 8px 0 6px; }
+  .subtitle { color: #4b5563; font-size: 16px; margin: 0 0 10px; }
+  .meta { color: #6b7280; font-size: 14px; }
+  .meta .chip {
+    display: inline-block; background: #eff6ff; color: #2563eb;
+    border: 1px solid #bfdbfe; border-radius: 999px;
+    padding: 1px 10px; font-size: 12px; font-weight: 600; margin-right: 6px;
+  }
+  main { padding-bottom: 90px; }
+  section.card {
+    background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 26px 32px; margin: 22px 0;
+  }
+  h2 { font-size: 22px; margin: 0 0 12px; line-height: 1.4; }
+  h3 { font-size: 17px; margin: 26px 0 8px; }
+  p { margin: 10px 0; }
+  ul, ol { margin: 8px 0; padding-left: 24px; }
+  li { margin: 4px 0; }
+  .eli {
+    background: #f0f9ff; border-left: 4px solid #2563eb;
+    border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 0 0 16px;
+    color: #0c4a6e; font-size: 15px;
+  }
+  .eli strong { color: #075985; }
+  .callout {
+    background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+    padding: 12px 16px; margin: 14px 0; font-size: 15px;
+  }
+  .callout.green { background: #ecfdf5; border-color: #a7f3d0; }
+  .callout.red { background: #fef2f2; border-color: #fecaca; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 12px 0 4px; }
+  th, td { border: 1px solid #e5e7eb; padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: #f8fafc; font-weight: 600; white-space: nowrap; }
+  .tblwrap { overflow-x: auto; }
+  code, kbd {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.88em;
+  }
+  code { background: #f3f4f6; border-radius: 4px; padding: 1px 5px; }
+  kbd {
+    background: #f9fafb; border: 1px solid #d1d5db; border-bottom-width: 2px;
+    border-radius: 4px; padding: 0 5px; white-space: nowrap;
+  }
+  pre {
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 16px 18px; overflow-x: auto; margin: 14px 0;
+  }
+  pre code { background: none; padding: 0; font-size: 13px; line-height: 1.6; display: block; }
+  figure { margin: 22px 0; }
+  figure svg {
+    width: 100%; height: auto; display: block;
+    background: #ffffff; border: 1px solid #f1f5f9; border-radius: 8px;
+  }
+  figcaption { font-size: 13px; color: #6b7280; margin-top: 8px; text-align: center; }
+  svg text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+  svg .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  ol.inv > li { margin: 8px 0; }
+  .small { font-size: 13px; color: #6b7280; }
+  footer { text-align: center; color: #9ca3af; font-size: 13px; padding: 10px 0 40px; }
+</style>
+</head>
+<body>
+
+<header class="doc">
+  <div class="meta">
+    <span class="chip">설계 단계 v1</span>
+    <span class="chip">작성일 2026-07-03</span>
+    <span class="chip" style="background:#f8fafc;color:#6b7280;border-color:#e5e7eb">Windows 이식 트랙 · 미착수</span>
+  </div>
+  <h1>여기요!! — Windows 버전 작업계획서</h1>
+  <p class="subtitle">macOS판(Phase 0~3 완료)과 동일한 제품 루프를 Windows에서 재현하는 이식 계획 · 포맷은 <strong>CapNote v1 그대로(동결 유지)</strong></p>
+  <p class="meta">선행 조건: macOS판 Phase 0~3 완료(2026-07-03) · 대상 플랫폼: Windows 10 21H2+ / 11 · 스택: Tauri v2 + TypeScript Canvas (동일)</p>
+</header>
+
+<main>
+
+<!-- ============================================================ 진행 현황 트래커
+     단계 상태가 바뀌면 함께 갱신할 것:
+     (1) 노드 원 색/내용(✓·W번호), (2) 트랙 라인의 초록 구간 끝 x좌표,
+     (3) "다음 작업" 배지의 x좌표, (4) 노드 아래 상태 줄, (5) 요약 칩, (6) 마지막 갱신 날짜 -->
+<section class="card" id="progress" style="border-top:4px solid #2563eb">
+  <h2 style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap">진행 현황
+    <span class="small" style="font-weight:400">마지막 갱신 2026-07-03</span></h2>
+  <p class="meta" style="margin:2px 0 12px">
+    <span class="chip" style="background:#ecfdf5;color:#059669;border-color:#a7f3d0;margin-bottom:4px">✅ 완료 — 이식 계획서 작성 (리서치 4축 검증 포함)</span>
+    <span class="chip" style="margin-bottom:4px">▶ 다음 — Phase W0 검증 스파이크 (착수 승인 + Windows 기기 확보 후)</span>
+  </p>
+  <svg viewBox="0 0 880 140" role="img" aria-label="진행 현황 스텝퍼: 계획서 완료, Phase W0부터 W3까지 미착수, W4는 백로그">
+    <!-- track -->
+    <line x1="70" y1="52" x2="810" y2="52" stroke="#e5e7eb" stroke-width="4"/>
+    <line x1="70" y1="52" x2="70" y2="52" stroke="#059669" stroke-width="4"/>
+    <!-- node 1: 계획서 (done) -->
+    <circle cx="70" cy="52" r="13" fill="#059669"/>
+    <text x="70" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">✓</text>
+    <text x="70" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">이식 계획서</text>
+    <text x="70" y="106" text-anchor="middle" font-size="12" fill="#4b5563">리서치·산정</text>
+    <text x="70" y="124" text-anchor="middle" font-size="11" fill="#059669">07-03 완료</text>
+    <!-- node 2: W0 (next) -->
+    <circle cx="218" cy="52" r="13" fill="#ffffff" stroke="#2563eb" stroke-width="2.5"/>
+    <text x="218" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#2563eb">W0</text>
+    <rect x="178" y="8" width="80" height="20" rx="10" fill="#2563eb"/>
+    <text x="218" y="22" text-anchor="middle" font-size="11" font-weight="600" fill="#ffffff">다음 작업</text>
+    <text x="218" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase W0</text>
+    <text x="218" y="106" text-anchor="middle" font-size="12" fill="#4b5563">검증 스파이크</text>
+    <text x="218" y="124" text-anchor="middle" font-size="11" fill="#9ca3af">승인·기기 대기</text>
+    <!-- node 3: W1 -->
+    <circle cx="366" cy="52" r="13" fill="#ffffff" stroke="#9ca3af" stroke-width="2"/>
+    <text x="366" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280">W1</text>
+    <text x="366" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase W1</text>
+    <text x="366" y="106" text-anchor="middle" font-size="12" fill="#4b5563">셸 이식·오버레이</text>
+    <text x="366" y="124" text-anchor="middle" font-size="11" fill="#9ca3af">미착수</text>
+    <!-- node 4: W2 -->
+    <circle cx="514" cy="52" r="13" fill="#ffffff" stroke="#9ca3af" stroke-width="2"/>
+    <text x="514" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280">W2</text>
+    <text x="514" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase W2</text>
+    <text x="514" y="106" text-anchor="middle" font-size="12" fill="#4b5563">어노테이터·좌표 정책</text>
+    <text x="514" y="124" text-anchor="middle" font-size="11" fill="#9ca3af">미착수</text>
+    <!-- node 5: W3 -->
+    <circle cx="662" cy="52" r="13" fill="#ffffff" stroke="#9ca3af" stroke-width="2"/>
+    <text x="662" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280">W3</text>
+    <text x="662" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase W3</text>
+    <text x="662" y="106" text-anchor="middle" font-size="12" fill="#4b5563">멀티모니터·배포</text>
+    <text x="662" y="124" text-anchor="middle" font-size="11" fill="#9ca3af">미착수</text>
+    <!-- node 6: W4 (backlog) -->
+    <circle cx="810" cy="52" r="13" fill="#ffffff" stroke="#9ca3af" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="810" y="56" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280">W4</text>
+    <text x="810" y="88" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Phase W4</text>
+    <text x="810" y="106" text-anchor="middle" font-size="12" fill="#4b5563">백로그 (선택)</text>
+    <text x="810" y="124" text-anchor="middle" font-size="11" fill="#9ca3af">필요 실증 시</text>
+  </svg>
+  <p class="small" style="margin:10px 0 0">macOS판의 설계·검증 이력은 <a href="plan.html">plan.html</a>(공통 설계의 단일 출처)과 <a href="phase0-verification.md">phase0-verification.md</a>. 각 단계가 끝날 때마다 이 트래커를 갱신한다.</p>
+</section>
+
+<!-- ============================================================ 1 -->
+<section class="card" id="s1">
+  <h2>1. 이 문서는?</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 이미 macOS에서 완성해 쓰고 있는 도구를 Windows에서도 똑같이 쓰게 만드는 "이사 계획서"예요. 그대로 옮겨도 되는 짐(제품의 95%)과, 새 집에 맞춰 다시 만들어야 하는 부분(캡처 방식·좌표 규칙·설치 방법)을 구분해 정리했어요.</p>
+  <p>이 문서는 <strong>여기요!! Windows 버전</strong>의 작업계획서다. macOS판은 Phase 0~3이 완료되어 실사용(도그푸딩) 중이고, CapNote v1 스펙은 동결되어 있다. 따라서 이 문서는 그린필드 계획서가 아니라 <strong>이식(port) 계획서</strong>다 — 왜 이 설계가 Windows에서 더 유리한지(§3), 무엇이 그대로 가고(§4), 무엇을 새로 만들며(§5), 어떤 정책을 Windows에 맞게 개정하고(§6~7), 어떤 셸·배포를 선택하며(§8), 어떤 순서로 며칠 만에 하는지(§9~10), 무엇이 위험하고(§11), 착수 전에 무엇을 결정해야 하는지(§12)를 다룬다.</p>
+  <p>제품이 무엇인지·왜 필요한지·CapNote v1 문법·어노테이션 창 설계는 여기에 중복 기술하지 않는다 — <a href="plan.html">plan.html</a> §2~6이 단일 출처다. 이 문서는 <strong>Windows에서 달라지는 것</strong>만 다룬다.</p>
+  <p>이 계획서의 기술적 주장(캡처 API·플러그인 이슈·Claude Code 거동·DPI 규칙)은 2026-07-03에 공식 문서·GitHub 이슈 기준으로 조사·검증한 것이다. 착수 시점이 늦어지면 §11 리스크 9(외부 가정 결합)와 §12 미해결 질문을 재확인할 것.</p>
+  <p class="small">문서 언어 정책: 산문은 한국어, 코드·CLI 명령·포맷 키워드는 영어. 수치·경로·단축키(CapNote v1, Alt+Shift+C, <code>%USERPROFILE%\.capnote\</code>, 14일/500개)는 모든 문서에서 동일하게 유지한다. 단 공유 수치 중 "1568px 단일 규칙"은 §6.2의 정책 개정 대상이다 — 개정이 확정되면 plan.html §1·§5와 CLAUDE.md의 해당 수치도 함께 개정한다(§12 결정 4).</p>
+</section>
+
+<!-- ============================================================ 2 -->
+<section class="card" id="s2">
+  <h2>2. 목표 — 같은 루프, 같은 포맷, 다른 OS</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> Windows에서도 "단축키 → 찍고 → 표시하고 → 붙여넣기 한 번"이 macOS와 완전히 똑같이 되게 하는 게 목표예요. AI에게 보내는 편지 양식(CapNote)은 한 글자도 안 바꿔요.</p>
+  <p>목표는 단 하나다: macOS판의 제품 루프 — 전역 단축키 → 영역 선택 → 어노테이션(스마트 툴 3종·인라인 노트) → 원샷 커밋(번인 → 다운스케일 → PNG 저장 → CapNote 텍스트 클립보드 → 포커스 복귀) → 터미널 붙여넣기 — 를 Windows에서 동일한 체감 속도(마커 1개 ~5초, 3개 ~10초)로 재현한다.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 270" role="img" aria-label="Windows판 전체 사용 루프 다이어그램">
+      <defs>
+        <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <!-- Row 1 -->
+      <rect x="12" y="34" width="186" height="62" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="105" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">Alt+Shift+C</text>
+      <text x="105" y="80" text-anchor="middle" font-size="12" fill="#6b7280">전역 단축키 (설정 가능)</text>
+
+      <line x1="200" y1="65" x2="230" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="234" y="34" width="186" height="62" rx="8" fill="#fef2f2" stroke="#dc2626"/>
+      <text x="327" y="60" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">자체 캡처 오버레이</text>
+      <text x="327" y="80" text-anchor="middle" font-size="12" fill="#6b7280">프리즈 프레임 위 드래그 (신규)</text>
+
+      <line x1="422" y1="65" x2="452" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="456" y="34" width="186" height="62" rx="8" fill="#fffbeb" stroke="#d97706"/>
+      <text x="549" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">어노테이션 창</text>
+      <text x="549" y="80" text-anchor="middle" font-size="12" fill="#6b7280">macOS판 그대로 재사용</text>
+
+      <line x1="644" y1="65" x2="674" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="678" y="34" width="188" height="62" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="772" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">Ctrl+Enter</text>
+      <text x="772" y="80" text-anchor="middle" font-size="12" fill="#6b7280">원샷 커밋 (번인+저장+복사)</text>
+
+      <!-- elbow connector row1 -> row2 -->
+      <polyline points="772,96 772,128 105,128 105,158" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+      <text x="438" y="122" text-anchor="middle" font-size="12" fill="#6b7280">창 닫힘 → 직전 창(HWND) 포커스 자동 복귀</text>
+
+      <!-- Row 2 -->
+      <rect x="12" y="162" width="186" height="62" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="105" y="188" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">클립보드</text>
+      <text x="105" y="208" text-anchor="middle" font-size="12" fill="#6b7280">CapNote 텍스트만 (이미지 없음)</text>
+
+      <line x1="200" y1="193" x2="286" y2="193" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="290" y="162" width="186" height="62" rx="8" fill="#f3f4f6" stroke="#6b7280"/>
+      <text x="383" y="188" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">터미널에서 Ctrl+V</text>
+      <text x="383" y="208" text-anchor="middle" font-size="12" fill="#6b7280">사용자에게 남는 유일한 행동</text>
+
+      <line x1="478" y1="193" x2="562" y2="193" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="566" y="162" width="300" height="62" rx="8" fill="#ecfdf5" stroke="#059669"/>
+      <text x="716" y="188" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">에이전트 (Claude Code)</text>
+      <text x="716" y="208" text-anchor="middle" font-size="12" fill="#6b7280">네이티브 또는 WSL — 경로 스타일 설정으로 대응</text>
+    </svg>
+    <figcaption>그림 ① Windows판 사용 루프 — macOS판과 동일한 골격. 빨간 상자(자체 캡처 오버레이)가 유일하게 새로 만드는 큰 부품이다.</figcaption>
+  </figure>
+
+  <h3>불변식 5개의 지위 + Windows 보조 조항 2개</h3>
+  <p>macOS판의 핵심 설계 불변식 5개(클립보드 텍스트 전용 · 단일 좌표계 = 저장 이미지 픽셀 · ≤1568px PNG · 다운스케일 후 번인 · 공유 번호 시퀀스, <a href="plan.html">plan.html §2</a>) 중 <strong>1·2·4·5는 Windows에서 무변경으로 성립하며 계속 위반 금지</strong>다. <strong>불변식 3은 목적(모델이 보는 픽셀 = 텍스트 좌표, 정확히 1:1)은 불변이지만 수단(장변 ≤1568px 단일 규칙)이 리서치 결과 불충분한 것으로 판명되어 개정이 필요하다</strong>(§6.2) — 단, 이 계획서의 v1 범위(범용 프로필)는 현행 문언 안에서 동작하므로, 문언 개정(고해상도 프로필)은 §12 결정 4로 게이트한다. 불변식 개정은 이 문서가 단독 결정할 사안이 아니라 CLAUDE.md·plan.html 개정을 수반하는 사안이기 때문이다. 여기에 Windows 전용 보조 조항 2개를 추가한다:</p>
+  <ol class="inv">
+    <li><strong>모든 프로세스는 Per-Monitor DPI Awareness v2(PMv2).</strong> Tauri(tao)가 메인 프로세스에 기본 적용하지만, 캡처 헬퍼 등 별도 프로세스를 만든다면 그 프로세스도 PMv2를 선언해야 한다 — 미선언 프로세스는 좌표·화면 크기가 96dpi로 가상화되어 좌표계 불변식이 조용히 깨진다.</li>
+    <li><strong>화면 지오메트리 계산은 Rust에서만.</strong> 모니터 물리 rect·scale factor는 Tauri Monitor API(Win32 GetDpiForMonitor)로 취득한다. WebView2의 JS 화면 API가 mixed-DPI 멀티모니터에서 잘못된 값을 반환하던 버그(MicrosoftEdge/WebView2Feedback#4826)는 런타임 147.0.3891.0(2026-03)에서 수정됐지만, 미갱신·고정 버전 런타임의 잔존 가능성과 웹뷰 화면 API의 일반적 mixed-DPI 신뢰성 한계를 고려해 <strong>심층 방어로 Rust 단독 지오메트리를 유지</strong>한다.</li>
+  </ol>
+</section>
+
+<!-- ============================================================ 3 -->
+<section class="card" id="s3">
+  <h2>3. 왜 Windows에서 이 설계가 더 강한가</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> Windows의 AI 터미널에서는 "그림 붙여넣기"가 더 헷갈려요(Ctrl+V가 아니라 Alt+V). 우리는 처음부터 그림을 클립보드에 안 넣는 방식이라, 이 헷갈림을 아예 우회해요 — macOS에서보다 장점이 더 커져요.</p>
+  <p>macOS판 설계의 출발점은 "Claude Code의 이미지 붙여넣기는 <kbd>⌘V</kbd>가 아니라 <kbd>Ctrl+V</kbd>"라는 함정이었다(plan.html §3). Windows에서 이 함정은 사라지는 게 아니라 형태를 바꿔 존속한다: Windows Terminal이 <kbd>Ctrl+V</kbd>를 "텍스트 붙여넣기"로 먼저 소비하기 때문에, Claude Code의 이미지 붙여넣기는 <kbd>Alt+V</kbd>라는 더 비직관적인 키에 배정되어 있다(공식 interactive-mode 문서). 게다가 네이티브 Windows에서는 원시 비트맵 클립보드의 이미지 붙여넣기가 조용히 실패하는 사례가 반복 보고되어 있다(claude-code #32791 등).</p>
+  <p>즉 "번인 PNG는 파일로 저장하고, 클립보드에는 경로가 포함된 텍스트만 넣는다"(불변식 1)는 이 제품의 설계가 Windows에서는 <strong>표준 <kbd>Ctrl+V</kbd> 한 번으로 시각+의미 채널이 동시 도착하는 유일하게 안정적인 경로</strong>가 된다. 파일 경로 참조는 Claude Code 공식 문서가 명시한 이미지 전달 방법이기도 하다. 이식의 정당성이 곧 제품 차별점이다.</p>
+</section>
+
+<!-- ============================================================ 4 -->
+<section class="card" id="s4">
+  <h2>4. 무엇이 그대로 가고, 무엇이 바뀌나 — 플랫폼 대응표</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 이삿짐 목록이에요. "그대로" 줄이 압도적으로 많아요 — 제품의 알맹이(그림 그리는 화면과 편지 양식)는 원래부터 OS를 안 가리게 만들어 놨거든요.</p>
+  <p>macOS판 아키텍처가 "웹뷰 UI 95% + 얇은 Rust 셸"이었던 것이 여기서 회수된다. 어노테이터·번인 렌더러·사이드카(PNG 옆에 저장되는 CapNote 텍스트 사본)·히스토리·설정 UI·GC는 무수정 재사용이고, 다운스케일 파이프라인과 CapNote 인코더의 <code>scale:</code> 줄은 <strong>정책 개정 대상</strong>(§6)이며, 새로 만드는 것은 Rust 셸의 OS 접점과 캡처 UI다.</p>
+
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th>관심사</th><th>macOS판 (현재)</th><th>Windows판 (계획)</th><th>작업 성격</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>어노테이터·스마트 툴 3종·인라인 노트</td><td colspan="2" style="text-align:center">동일 (TS + Canvas 2D)</td><td><strong>무수정 재사용</strong></td></tr>
+      <tr><td>번인 렌더러·사이드카·GC·히스토리</td><td colspan="2" style="text-align:center">동일</td><td><strong>무수정 재사용</strong></td></tr>
+      <tr><td>CapNote v1 인코더</td><td><code>scale: N image px = 1 CSS px</code> (N=1 고정)</td><td>동일 문법 · <code>scale:</code> 계수만 실측값 (§6.4)</td><td>소폭 수정</td></tr>
+      <tr><td>캡처 UI</td><td><code>screencapture -i</code> 스폰 (OS 제공)</td><td>자체 오버레이: 프리즈 프레임 + 드래그 선택 (§5)</td><td>신규 (최대 작업)</td></tr>
+      <tr><td>캡처 엔진</td><td><code>screencapture</code>가 파일 생성</td><td>xcap 크레이트 (GDI 기본) → 메모리 RgbaImage</td><td>신규 (수십 줄)</td></tr>
+      <tr><td>ESC 취소 감지</td><td>파일 미생성으로 간접 감지</td><td>오버레이 keydown으로 자명하게 처리</td><td>단순화</td></tr>
+      <tr><td>캡처 권한</td><td>TCC "화면 기록" 온보딩 + 픽셀 검증</td><td>권한 프롬프트 없음 (Win11 프라이버시 토글 Off 시 실패 감지·안내만)</td><td>대폭 단순화</td></tr>
+      <tr><td>스케일(배율) 감지</td><td>PNG pHYs 청크 144dpi → @2x 추정</td><td>GetDpiForMonitor / Tauri <code>scale_factor()</code> 직접 취득</td><td>단순화 (추정 → 실측)</td></tr>
+      <tr><td>다운스케일 정책</td><td>@2x → 1/2 (정수 배율)</td><td>공식 <code>resized_size()</code> 이중 제약 (§6 — 분수 배율 허용)</td><td>정책 개정 (macOS 백포트 후보)</td></tr>
+      <tr><td>포커스 복귀</td><td>AppKit <code>NSRunningApplication.activate</code></td><td>Win32 <code>GetForegroundWindow</code> 기억 → <code>SetForegroundWindow</code></td><td>대체 구현 (<code>windows.rs</code> 수십 줄)</td></tr>
+      <tr><td>상주 형태</td><td><code>ActivationPolicy::Accessory</code> + 메뉴바 트레이</td><td>대응물 불필요 — 트레이 전용 (<code>visible:false</code> + <code>skipTaskbar</code> 유지)</td><td>단순화</td></tr>
+      <tr><td>트레이 아이콘</td><td>template 이미지 (<code>icon_as_template</code>)</td><td>32bit RGBA 정사각 PNG (template 개념 없음 · 24bit PNG는 panic 이슈 tauri-apps/tauri#6706)</td><td>에셋 추가</td></tr>
+      <tr><td>전역 단축키</td><td>⌥⇧C (<code>alt+shift+c</code>)</td><td>Alt+Shift+C — 동일 문자열, 동일 플러그인 (W0 스모크로 확인)</td><td>재사용 + 검증</td></tr>
+      <tr><td>커밋/단축키 표기</td><td>⌘Enter·⌘Z·⌘C (<code>metaKey</code> 4곳)</td><td>Ctrl+Enter·Ctrl+Z·Ctrl+C (<code>ctrlKey</code> 분기 + 라벨 ⌘→Ctrl)</td><td>소폭 수정</td></tr>
+      <tr><td>저장 경로 기본값</td><td><code>~/.capnote/</code> (<code>$HOME</code> 확장)</td><td><code>%USERPROFILE%\.capnote\</code> (<code>~</code> 확장을 USERPROFILE로)</td><td>소폭 수정 (§7)</td></tr>
+      <tr><td>CapNote <code>image:</code> 경로</td><td>POSIX 절대 경로</td><td>경로 스타일 설정: <code>windows</code>(기본) / <code>wsl</code> (§7)</td><td>신규 설정 1개</td></tr>
+      <tr><td>사용자 붙여넣기 안내</td><td>"⌘V into Claude Code"</td><td>"Ctrl+V into Claude Code"</td><td>문구만</td></tr>
+      <tr><td>싱글 인스턴스·클립보드 플러그인</td><td colspan="2" style="text-align:center">동일 (플러그인 3종 모두 Windows 공식 지원 · 버전 핀 유지)</td><td>재사용 + 스모크</td></tr>
+      <tr><td>배포물</td><td>DMG (ad-hoc 서명, 공증 보류)</td><td>NSIS <code>-setup.exe</code> (per-user · 무서명 + SmartScreen 안내, §8)</td><td>신규</td></tr>
+      <tr><td>빌드 파이프라인</td><td>로컬 <code>pnpm tauri build</code></td><td>GitHub Actions <code>windows-latest</code> + tauri-action (§8)</td><td>신규</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small">코드 구조 계획: <code>capture.rs</code>·<code>macos.rs</code>의 OS 접점을 <code>#[cfg(target_os)]</code>로 분리하고 <code>windows.rs</code>(포커스 복귀)·<code>capture_win.rs</code>(xcap 래퍼)를 추가한다. 놓치기 쉬운 이식 잔여물 2건 포함: <code>settings.rs</code>의 <code>shortcut_label()</code>이 macOS 기호(⌘⌃⌥⇧)를 하드코딩해 트레이 라벨에 노출되므로 플랫폼 분기(Windows는 <code>Alt+Shift+C</code> 표기), 설정 창의 단축키 레코더(<code>main.ts</code>의 <code>metaKey</code>→<code>cmd</code> 매핑)도 Windows 키 매핑 확인. 프런트엔드는 그 외 modifier 키 분기(<code>annotator.ts</code>의 <code>metaKey</code> 4곳)뿐. 단일 저장소·단일 코드베이스 유지 — macOS 빌드가 이 트랙으로 회귀하지 않는 것을 <code>cargo check</code> 양 타깃으로 상시 확인.</p>
+</section>
+
+<!-- ============================================================ 5 -->
+<section class="card" id="s5">
+  <h2>5. 캡처 방식 결정 — 자체 오버레이 (이 계획서의 최대 결정)</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> macOS에서는 OS가 "화면 오려내기 도구"를 공짜로 빌려줬는데, Windows에는 빌려 쓸 만한 게 없어요. 그래서 화면을 통째로 찍어 얼려 놓고, 그 위에서 우리가 직접 만든 선택 화면으로 오려내는 방식(Flameshot·Snipaste가 쓰는 방식)으로 갑니다.</p>
+  <p>macOS판이 자체 캡처 UI 없이 성립한 것은 <code>screencapture -i</code>가 드래그 선택·창 선택·ESC 취소를 공짜로 제공했기 때문이다. Windows에는 이 대응물이 없다 — 이것이 이 이식의 유일하게 큰 신규 개발이다. 대안 4종을 비교했다:</p>
+
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th>기준</th><th>① <code>snippingtool /clip</code></th><th>② <code>ms-screenclip://</code> 신 프로토콜</th><th>③ 자체 오버레이 + xcap <strong>(채택)</strong></th><th>④ windows-capture (WGC/DXGI)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>결과물 수령</td><td>클립보드 <em>이미지</em>로만 (파일 불가)</td><td>파일 (file-access-token 리딤)</td><td>메모리 RgbaImage → 직접 저장</td><td>콜백 프레임 → 직접 저장</td></tr>
+      <tr><td>완료/ESC 감지</td><td>불가 (신호 없음 → 클립보드 폴링)</td><td>가능 (code 200/499)</td><td>자명 (자체 UI)</td><td>자체 UI 별도 필요</td></tr>
+      <tr><td>클립보드 오염</td><td><strong>있음 — 불변식 1과 충돌</strong></td><td>없음</td><td>없음</td><td>없음</td></tr>
+      <tr><td>배포 제약</td><td>없음 (단 undocumented, Win11 신뢰성 낮음)</td><td><strong>MSIX 패키징 필수</strong> — Tauri 기본 NSIS/MSI와 충돌 (MSIX 네이티브 미지원 tauri-apps/tauri#8548, WACK 실패 이슈 tauri-apps/tauri#14935)</td><td>없음</td><td>없음 (WGC 노란 캡처 테두리 — Win10 제거 불가)</td></tr>
+      <tr><td>UX 통제</td><td>Snipping Tool UI</td><td>Snipping Tool UI</td><td>완전 제어 (macOS판과 동일 UX 재현 가능)</td><td>완전 제어</td></tr>
+      <tr><td>1인 개발 비용</td><td>낮으나 품질 미달</td><td>높음 (MSIX 트랙 전체가 선행 조건)</td><td>중간</td><td>중상 (비디오 스트리밍 중심 설계 — 정지 화면 1장에 과잉)</td></tr>
+      <tr><td>판정</td><td>기각</td><td>W4 재평가 (Store 배포 결정 시)</td><td><strong>채택</strong></td><td>기각 (엔진 폴백 후보로만)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small">①의 클립보드 경유는 "캡처 입력"이라 해도 사용자 클립보드를 이미지로 덮어쓴다 — 불변식 1의 정신(클립보드는 CapNote 텍스트의 전용 채널)과 충돌한다. ②는 기술적으로 가장 정석(파일 출력·취소 감지)이지만 2025-05-01부로 구형 fire-and-forget URI가 폐기되고 신 프로토콜은 MSIX 패키지 앱 전용이 되어, 배포 형식이 캡처 기능의 인질이 된다.</p>
+
+  <h3>채택 아키텍처 — 프리즈 프레임 오버레이</h3>
+  <figure>
+    <svg viewBox="0 0 880 464" role="img" aria-label="자체 오버레이 캡처 아키텍처">
+      <defs>
+        <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <!-- step 1 -->
+      <rect x="20" y="30" width="255" height="96" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="147" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">1. 단축키 → 즉시 캡처</text>
+      <text x="36" y="80" font-size="12" fill="#374151"><tspan class="mono">xcap Monitor::all()</tspan> — 모니터마다</text>
+      <text x="36" y="100" font-size="12" fill="#374151">물리 픽셀 프레임 + scale_factor 취득</text>
+
+      <line x1="279" y1="78" x2="309" y2="78" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+      <!-- step 2 -->
+      <rect x="313" y="30" width="255" height="96" rx="8" fill="#fef2f2" stroke="#dc2626"/>
+      <text x="440" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">2. 모니터당 오버레이 창 1개</text>
+      <text x="329" y="80" font-size="11" class="mono" fill="#374151">decorations:false · alwaysOnTop ·</text>
+      <text x="329" y="100" font-size="11" fill="#374151"><tspan class="mono">skipTaskbar · PhysicalPosition</tspan> 배치</text>
+
+      <line x1="572" y1="78" x2="602" y2="78" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+      <!-- step 3 -->
+      <rect x="606" y="30" width="255" height="96" rx="8" fill="#fffbeb" stroke="#d97706"/>
+      <text x="733" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">3. 프리즈 프레임 위 선택</text>
+      <text x="622" y="80" font-size="12" fill="#374151">배경 = 얼린 화면 · Canvas 드래그 rect</text>
+      <text x="622" y="100" font-size="12" fill="#374151">ESC = 취소 · 창 선택 모드는 W3</text>
+
+      <!-- elbow to row 2 -->
+      <polyline points="733,126 733,160 147,160 147,192" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+      <text x="440" y="152" text-anchor="middle" font-size="12" fill="#6b7280">선택 rect (오버레이 CSS px) × 해당 모니터 scale_factor → 물리 px 환산</text>
+
+      <!-- step 4 -->
+      <rect x="20" y="196" width="255" height="96" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="147" y="222" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">4. Rust에서 crop</text>
+      <text x="36" y="246" font-size="12" fill="#374151">모니터 로컬 물리 좌표로 프리즈</text>
+      <text x="36" y="266" font-size="12" fill="#374151">프레임을 잘라냄 (가상 전역좌표 금지)</text>
+
+      <line x1="279" y1="244" x2="309" y2="244" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+      <!-- step 5 -->
+      <rect x="313" y="196" width="255" height="96" rx="8" fill="#ecfdf5" stroke="#059669"/>
+      <text x="440" y="222" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">5. 기존 파이프라인 합류</text>
+      <text x="329" y="246" font-size="12" fill="#374151">어노테이션 → 번인 → 다운스케일 →</text>
+      <text x="329" y="266" font-size="12" fill="#374151">PNG 저장 → CapNote → 클립보드</text>
+
+      <line x1="572" y1="244" x2="602" y2="244" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+      <rect x="606" y="196" width="255" height="96" rx="8" fill="#f3f4f6" stroke="#6b7280"/>
+      <text x="733" y="222" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">터미널 Ctrl+V</text>
+      <text x="622" y="246" font-size="12" fill="#374151">macOS판과 동일한 종착점 —</text>
+      <text x="622" y="266" font-size="12" fill="#374151">여기부터는 이식이 아니라 재사용</text>
+
+      <!-- notes strip -->
+      <rect x="20" y="322" width="841" height="118" rx="8" fill="#f8fafc" stroke="#e5e7eb"/>
+      <text x="36" y="348" font-size="12" font-weight="600" fill="#374151">설계 노트</text>
+      <text x="36" y="370" font-size="12" fill="#4b5563">· 프리즈 프레임 방식이라 "오버레이가 하부 비디오를 일시정지시키는" fullscreen occlusion 이슈</text>
+      <text x="48" y="388" font-size="12" fill="#4b5563">(tauri-apps/tauri#7401)와 무관할 가능성이 높음 — W0에서 확인</text>
+      <text x="36" y="410" font-size="12" fill="#4b5563">· 오버레이 표시 지연(WebView2 cold start) 대비: 숨김 오버레이 창을 앱 시작 시 사전 생성해 재사용</text>
+      <text x="48" y="428" font-size="12" fill="#4b5563">· 목표 단축키→표시 &lt;300ms (macOS판 창 표시 기준 승계)</text>
+    </svg>
+    <figcaption>그림 ② 자체 오버레이 캡처 플로우 — 5번 상자부터는 macOS판 코드가 그대로 동작한다. 신규 개발의 경계가 명확하다.</figcaption>
+  </figure>
+
+  <ul>
+    <li><strong>캡처 엔진은 xcap</strong> (v0.9.x, 활발 유지보수 · Tauri 생태계에 tauri-plugin-screenshots 통합 사례 존재). 기본 GDI 경로 사용 — WGC의 노란 캡처 테두리(Windows 10에서 제거 불가)를 피한다. 프리즈 프레임 1장에는 GDI로 충분하며, 화질·차단 이슈 발견 시 <code>wgc</code> feature로 전환 여지를 남긴다.</li>
+    <li><strong>창 선택 모드</strong>(macOS <kbd>Space</kbd> 토글 대응)는 W3에서 오버레이 내부에 구현: xcap <code>Window::all()</code>(cloaked 필터·z-order 제공)로 창 목록 확보 → 호버 시 최상위 창 rect 하이라이트 → 클릭 스냅. 경계는 <code>DwmGetWindowAttribute(DWMWA_EXTENDED_FRAME_BOUNDS)</code>로 취득 — <code>GetWindowRect</code>는 보이지 않는 리사이즈 테두리(~8px)를 포함해 어긋난다. 이미 프리즈 프레임에서 crop하므로 별도 창 캡처(PrintWindow)는 불필요.</li>
+    <li><strong>권한 온보딩 트랙 삭제.</strong> Windows에는 TCC 대응물이 없어 GDI 캡처에 사용자 승인이 필요 없다. 단 Windows 11 설정의 "데스크톱 앱 스크린샷 허용" 토글이 Off인 경우를 대비해, 캡처 결과가 비정상(균일 픽셀·실패)일 때의 안내 문구만 준비한다 — macOS판 <code>verify_pixels</code>의 균일 픽셀 검사 로직을 인메모리 버퍼용으로 추출·공용화하고 메시지는 Windows용으로 교체(현행 함수는 파일 경로 입력 + TCC 전용 문구라 그대로 재사용은 안 됨).</li>
+  </ul>
+
+  <div class="callout"><strong>탈출 조건 (macOS판 "Electron 2d 룰"을 이 트랙에서 대체하는 룰):</strong> Tauri 웹뷰 오버레이의 엣지 케이스(표시 지연·z-order·Win11 taskbar 겹침 tauri-apps/tauri#7328 등)로 <strong>2 active-day 이상</strong> 소모되면, 전면 전환이 아니라 <strong>오버레이 창만 native Win32 layered window(Rust 직접 구현)로 국소 교체</strong>한다 — 캡처 엔진·어노테이터·파이프라인은 영향 없음. 그래도 막히면 최후 폴백은 ② MSIX + Snipping Tool 프로토콜 — 단 발동 시 §8의 NSIS 배포 전략이 MSIX로 재편되는 비용(W4의 Store 트랙 선행)까지 감수하는 결정임을 명시해 둔다. 이 결정을 미루지 말 것.</div>
+</section>
+
+<!-- ============================================================ 6 -->
+<section class="card" id="s6">
+  <h2>6. 이미지·좌표 정책 (Windows) — 그리고 macOS판에 주는 숙제</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> Windows는 화면 확대 배율이 125%, 150%처럼 어중간해서 "반으로 줄이면 딱 맞는" macOS식 계산이 안 통해요. 대신 AI가 이미지를 절대 다시 줄이지 않도록, AI 공식 계산법으로 정확한 크기를 미리 맞춰서 저장해요. 조사 중에 지금 macOS 버전 계산에도 빈틈이 있다는 걸 발견했어요.</p>
+
+  <h3>6.1 캡처 픽셀 공간 — 물리 픽셀, 실측 배율</h3>
+  <p>PMv2 프로세스에서 xcap/DXGI 캡처는 <strong>물리 픽셀</strong> 프레임을 준다. 모니터별 배율은 pHYs 추정 없이 <code>GetDpiForMonitor</code>(Tauri <code>scale_factor()</code>)로 캡처 시점에 정확히 안다 — macOS판보다 오히려 견고하다. pHYs 청크는 Windows 생태계에서 배율 감지 채널로 신뢰할 수 없으므로(Snipping Tool도 96dpi 고정 관례) <strong>기록하지 않고 파싱도 하지 않는다</strong> — 현행 파이프라인(캔버스 → PNG 인코드)도 기록하지 않으므로 현상 유지다.</p>
+
+  <h3>6.2 다운스케일 정책 개정 — "장변 1568" 단일 규칙은 불충분했다</h3>
+  <div class="callout red"><strong>리서치 발견 (이 계획서에서 가장 중요한 기술 변경):</strong> Anthropic 비전의 리사이즈는 "장변 ≤ 1568px" 하나가 아니라 <strong>장변 제한 + 비주얼 토큰 제한(28×28px 패치당 1토큰)의 이중 제약</strong>이다. 표준 티어는 1568px/1568토큰 — 16:9 <code>1568×882</code>조차 56×32=1792토큰이라 모델이 ~<code>1456×819</code>로 재축소한다. 즉 기존 규칙만으로는 "모델이 보는 픽셀 = 텍스트 좌표"(불변식 3의 목적)가 화면비에 따라 깨진다. 공식 문서(vision-coordinates)가 정확한 <code>resized_size()</code> 참조 구현과 함께 "사전 리사이즈로 1:1을 맞추라"고 권고한다.</div>
+  <ul>
+    <li><strong>Windows판은 처음부터 공식 <code>resized_size()</code> 이중 제약으로 저장 크기를 결정한다</strong> (참조 구현 이식, Rust/TS 수십 줄). 한계 이하 크기는 네이티브 보존, 업스케일 금지·PNG 전용은 그대로.</li>
+    <li><strong>다운스케일 프로필:</strong> v1 범위는 <code>범용</code>(1568px/1568토큰 — 어떤 티어 모델에서도 1:1 보장, 불변식 3의 현행 문언 "장변 ≤1568" 안에서 동작) <strong>고정</strong>. <code>고해상도</code> 프로필(2576px/4784토큰 — Claude Code의 현행 모델 티어 전제, 픽셀 보존 최대)은 장변이 1568을 넘는 저장을 허용하므로 <strong>불변식 3 문언 개정(§12 결정 4)이 승인되기 전까지 설계 예비(W4)로만 둔다</strong>.</li>
+    <li><strong>분수 배율 축소의 1px 디테일 열화</strong>(정수 1/2보다 비예측적)는 불가피하므로: 리샘플 필터는 Lanczos3(또는 CatmullRom) 지정, 그리고 "정밀 지목은 영역 캡처(네이티브 보존 구간)로" 유도하는 UX 문구를 유지한다 — 제품 스위트스팟이 영역 캡처인 것은 macOS판과 동일.</li>
+    <li><strong>macOS 백포트 후보:</strong> 현행 macOS판도 같은 이슈를 갖는다 (16:10 Retina 전체 화면 2880×1800 → 1440×900 = 1716토큰 &gt; 1568 → 표준 티어에서 재축소). Phase 0/2/3 검증은 고해상도 티어 모델(Claude Code)에서 수행돼 통과한 것으로 해석된다. 백포트 여부·시점은 §12 미해결 질문 — <strong>이 트랙에서 조용히 섞지 말고 별도 결정으로</strong>.</li>
+  </ul>
+
+  <h3>6.3 대표 시나리오 표 (물리 픽셀 → 저장본)</h3>
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th>시나리오</th><th>물리 px</th><th>범용 프로필 저장본 (배율)</th><th>고해상도 프로필 저장본 (배율)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1920×1080 @100% 전체 화면</td><td>1920×1080</td><td>1456×819 (0.758)</td><td>1920×1080 네이티브 (1.0)</td></tr>
+      <tr><td>2560×1440 @125% 전체 화면</td><td>2560×1440</td><td>1456×819 (0.569)</td><td>2560×1440 네이티브 (1.0)</td></tr>
+      <tr><td>2880×1920 @150% 전체 화면 (Surface)</td><td>2880×1920</td><td>1344×896 (0.467)</td><td>2352×1568 (0.817)</td></tr>
+      <tr><td>3840×2160 @150% 전체 화면</td><td>3840×2160</td><td>1456×819 (0.379)</td><td>2576×1449 (0.671)</td></tr>
+      <tr><td>800×600 CSS 영역 @125%</td><td>1000×750</td><td>네이티브 (1.0)</td><td>네이티브 (1.0)</td></tr>
+      <tr><td>1200×900 CSS 창 @150%</td><td>1800×1350</td><td>1270×952 (0.706)</td><td>1800×1350 네이티브 (1.0)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small">범용 프로필에서는 전체 화면이 항상 큰 축소(0.38~0.76)를 겪고, 고해상도 프로필도 150% 고밀도 화면(Surface 3:2·4K)에서는 축소를 피하지 못한다 — 정밀 지목의 스위트스팟이 "영역 캡처"인 이유가 표로 재확인된다. 표의 수치는 공식 <code>resized_size()</code> 참조 구현 기준이며, W2 구현 시 유닛 테스트 픽스처를 참조 구현 실행값으로 재생성한다. 고해상도 열은 §12 결정 4 승인 전까지 참고 정보.</p>
+
+  <h3>6.4 <code>scale:</code> 줄 — 값 채우기 정책 (문법 무변경)</h3>
+  <p>Windows에서는 "1 image px = 1 CSS px"가 항상 성립하지 않는다. <code>scale:</code> 줄은 동결된 문법 방향(<code>N image px = 1 CSS px</code>, 계수는 image px 쪽)을 그대로 유지하되 <strong>실측 계수를 기록하는 정보성 필드</strong>로 쓴다. 계수 정의는 <code>N = OS 배율(scale factor) × 저장 축소율</code> — 예: §6.3 표의 "1200×900 CSS 창 @150%, 범용 저장 0.706" 시나리오라면 N = 1.5 × 0.706 = 1.06, 즉 <code>scale: 1.06 image px = 1 CSS px</code>. 에이전트의 좌표 해석은 계속 image px만 사용한다(불변식 2). 이는 필드 <em>값</em>의 정책이지 문법 변경이 아니므로 스펙 동결과 충돌하지 않는다 — 소수 계수 표기를 에이전트가 오해석하지 않는지, 괄호 주석 병기가 v1 파서와 호환되는지는 W0 E2E 확인 항목이며, 문법 확장이 필요해지면 v1.1 제안으로만 처리한다.</p>
+
+  <h3>6.5 멀티모니터 — "모니터 로컬 물리 픽셀" 원칙</h3>
+  <ul>
+    <li><strong>오버레이는 모니터당 1개.</strong> Windows에서 창 1개는 DPI 1개만 갖는다 — 여러 mixed-DPI 모니터에 걸친 단일 오버레이는 구조적으로 부정확하다 (ShareX가 같은 함정으로 다수의 재발성 버그 보유: #8002, #5412 등).</li>
+    <li><strong>크롭 산술은 모니터 로컬 물리 좌표로만.</strong> 가상 데스크톱 전역 좌표(primary 원점, 음수 가능)는 모니터 식별에만 쓰고 픽셀 계산에 쓰지 않는다.</li>
+    <li><strong>선택 영역은 단일 모니터 내로 제한 (v1).</strong> 모니터 경계를 넘는 드래그는 mixed-DPI 스티칭 문제를 만들므로 W4 백로그로 보낸다 — macOS판도 단일 화면 선택이 기본 시나리오였다.</li>
+    <li>분수 배율에서 CSS px × scale_factor의 <strong>반올림 ±1px 드리프트</strong>는 실기기 E2E(125%/150%)로 floor/round 규칙을 확정한다 (W2 완료 기준에 포함).</li>
+  </ul>
+</section>
+
+<!-- ============================================================ 7 -->
+<section class="card" id="s7">
+  <h2>7. CapNote 전달 경로 (Windows) — 경로 스타일과 지원 매트릭스</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> Windows에서는 AI 터미널이 두 가지 방식(진짜 Windows용 / 리눅스 흉내 내는 WSL용)으로 돌아요. 같은 파일이라도 두 방식이 부르는 주소가 달라서, 편지에 어떤 주소를 적을지 설정 하나로 고를 수 있게 해요.</p>
+
+  <h3>7.1 저장 위치 — <code>%USERPROFILE%\.capnote\</code> 유지</h3>
+  <p>Claude Code 자신이 <code>%USERPROFILE%\.claude</code>를 쓰는 것을 포함해, 프로필 루트 dot-폴더는 Windows 개발자 도구의 확립된 관례다(.ssh, .gitconfig, .cargo …). macOS <code>~/.capnote</code>와 1:1 일관성이 있고, WSL에서 <code>/mnt/c/Users/&lt;name&gt;/.capnote</code>로 예측 가능하며, OneDrive Known Folder Move(Documents/Pictures 리다이렉트)의 영향권 밖이다. <code>%LOCALAPPDATA%</code>는 "캡처는 앱 캐시가 아니라 사용자 데이터"라는 제품 성격에 안 맞아 기각 — 경로는 지금처럼 설정으로 변경 가능하게 유지한다. 구현은 <code>settings.rs</code>의 <code>~</code> 확장이 <code>$HOME</code>만 보는 부분을 <code>USERPROFILE</code> 폴백으로 확장하면 된다.</p>
+
+  <h3>7.2 경로 스타일 설정 — 경로 전달을 위한 신규 설정 (신규 사용자 설정은 pathStyle과 §6.2 다운스케일 프로필 2개)</h3>
+  <p>캡처 앱은 소비자 터미널이 네이티브인지 WSL인지 알 수 없으므로 자동 감지는 불가능하다. 설정 1개(<code>pathStyle</code>)로 해결한다:</p>
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th>모드</th><th><code>image:</code> 줄에 실리는 경로</th><th>대상</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>windows</code> (기본)</td><td><code>C:\Users\name\.capnote\2026-07-03-101512.png</code></td><td>네이티브 Claude Code (PowerShell·CMD·Git Bash)</td></tr>
+      <tr><td><code>wsl</code></td><td><code>/mnt/c/Users/name/.capnote/2026-07-03-101512.png</code></td><td>WSL2의 Claude Code</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ul>
+    <li>경로는 CapNote v1 문법에서 "필드 값"일 뿐이므로 <strong>스펙 동결 위반이 아니다.</strong> 두 경로 병기 같은 문법 확장은 기각(v1 동결) — 필요 실증 시 v1.1 제안으로.</li>
+    <li>네이티브 모드의 구분자(백슬래시 vs 슬래시 <code>C:/Users/...</code>)는 W0 E2E로 확정한다. 잠정 기본은 백슬래시(OS canonical) — 단 Claude Code의 permission glob 매칭은 백슬래시에서 깨지는 공식 이슈(anthropics/claude-code#30736)가 있으므로, Read 경로에서도 이상 거동이 보이면 슬래시로 전환한다 (공식 문서 스스로 "Windows에서도 슬래시를 쓰라"고 안내하는 지점이 있음).</li>
+    <li>온보딩(첫 실행)에서 1회 질문 + 설정 창에서 전환 가능하게.</li>
+  </ul>
+
+  <h3>7.3 지원 터미널 매트릭스 (W0에서 실측 확정)</h3>
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th>티어</th><th>환경</th><th>근거·주의</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>1차 지원</strong></td><td>Windows Terminal(PowerShell) · VS Code 통합 터미널 — 네이티브 Claude Code</td><td>bracketed paste 지원, Ctrl+V 멀티라인 한 덩어리 도착. 공식 문서가 네이티브를 동급 1옵션으로 제시(요건 없음)</td></tr>
+      <tr><td><strong>2차 (best-effort)</strong></td><td>WSL2의 Claude Code · Git Bash(mintty)</td><td>WSL은 pathStyle=wsl로 커버. mintty는 멀티라인 붙여넣기 회귀 이력(anthropics/claude-code#47658, closed as not planned)</td></tr>
+      <tr><td><strong>비지원 명시</strong></td><td>레거시 conhost</td><td>Ctrl+V 붙여넣기 미동작 이슈(anthropics/claude-code#12298) — 트러블슈팅 문서에 "Windows Terminal 사용 + <code>claude update</code>" 안내</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small">CapNote 블록은 10~20줄·10k자 미만이라 [Pasted text] 접힘·대용량 잘림 이슈(anthropics/claude-code#5017)와는 거리가 있지만, 블록을 계속 컴팩트하게 유지한다. 한국어 노트의 mojibake는 Claude Code v2.1.187에서 수정 — 구버전 사용자 안내 항목.</p>
+</section>
+
+<!-- ============================================================ 8 -->
+<section class="card" id="s8">
+  <h2>8. 기술 선택 (Windows 셸·배포)</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 골격(Tauri)은 그대로 쓸 수 있다는 걸 확인했어요. 설치 파일 만들기와 "서명" 문제(서명이 없으면 Windows가 처음에 경고창을 띄워요)만 Windows만의 새 숙제예요.</p>
+
+  <h3>플러그인 패리티 — 재사용 + 최우선 스모크 1건</h3>
+  <ul>
+    <li>global-shortcut · clipboard-manager · single-instance 3종 모두 Windows 데스크톱 공식 지원. <strong>버전 핀(=) 유지.</strong></li>
+    <li>"등록은 성공하는데 콜백이 발화하지 않는" Windows 리포트(tauri-apps/plugins-workspace#2646)는 <strong>2025-04 종결 — 원인은 플러그인 회귀가 아니라 제보 환경(bun lockfile 손상)으로 판명</strong>. 즉 알려진 미해결 Windows 결함은 없다. 그래도 단축키는 제품 진입점이므로 W0에서 통상 스모크(콜백 발화 확인)를 수행하고, 만에 하나를 대비한 보험으로 백엔드인 global-hotkey 크레이트 직접 사용 경로와 트레이 메뉴 폴백(캡처 버튼, macOS판 그대로)을 유지한다.</li>
+    <li>트레이: <code>show_menu_on_left_click</code>의 Windows 지원은 Tauri 2.2.0+ — 현재 의존이 <code>tauri = "2"</code>이므로 충족. 트레이 아이콘은 32bit RGBA 정사각 PNG로 준비(라이트/다크 각각), <code>icon_as_template</code> 호출은 macOS cfg로 격리.</li>
+    <li>autostart(선택 — 수요 시): tauri-plugin-autostart = HKCU Run 키. "재부팅 후 엔트리 소실" 이슈(tauri-apps/plugins-workspace#771) 재현 확인을 QA 1항목으로.</li>
+  </ul>
+
+  <h3>포커스 복귀 — macOS보다 단순</h3>
+  <p>단축키 발화 시점에 <code>GetForegroundWindow()</code>로 HWND를 기억 → 커밋/ESC 후 <code>IsWindow</code> 검사 → (최소화면 <code>SW_RESTORE</code>) → <code>SetForegroundWindow()</code>. 커밋 시점에는 우리 앱이 포그라운드 프로세스이므로 MS 공식 허용 조건("호출 프로세스가 포그라운드 프로세스")에 정확히 부합한다 — <code>AttachThreadInput</code> 류 해킹은 v1 범위에서 제외하고 리스크로만 관리. <code>macos.rs</code> 대응 <code>windows.rs</code> 수십 줄 (windows 크레이트, <code>Win32_UI_WindowsAndMessaging</code> feature).</p>
+
+  <h3>배포 — NSIS 단독, 무서명으로 시작</h3>
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th>결정</th><th>선택</th><th>근거</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>인스톨러</td><td><strong>NSIS <code>-setup.exe</code></strong> (MSI 제외)</td><td>per-user 설치(관리자 권한 불필요)·크로스 컴파일 여지. MSI(WiX)는 Windows 전용 빌드에 기업 배포(GPO) 외 이점 없음</td></tr>
+      <tr><td>WebView2</td><td><code>downloadBootstrapper</code> (기본값)</td><td>Win11 전 기기 + Win10 대다수에 Evergreen 런타임 사전 설치. 오프라인 요구가 실증되면 offlineInstaller(+127MB)로 전환</td></tr>
+      <tr><td>코드 서명</td><td><strong>보류 (무서명)</strong> — <code>signCommand</code> 통합 지점만 설계에 유지</td><td>서명은 실행 필수가 아님 — SmartScreen 경고는 "추가 정보 → 실행"으로 통과 가능(타깃이 개발자라 실용적). 핵심 제약: Azure Artifact Signing($9.99/월)은 <strong>개인 개발자의 경우 미국·캐나다 거주자만</strong> — 한국 개인 개발자는 이용 불가. OV 인증서(클라우드 HSM형)는 배포 규모가 정당화될 때 재평가 (macOS판의 "공증 보류"와 동일한 구조의 보류)</td></tr>
+      <tr><td>최소 지원 OS</td><td>Windows 10 21H2+ / 11 (제안)</td><td>WebView2 사전 설치·Tauri 지원 라인과 정합. Win10 EOL(2025-10) 이후에도 WebView2 업데이트는 당분간 제공 — 최종 라인은 사용자 결정(§12)</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>빌드·검증 환경 — 3단 구성</h3>
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th>수단</th><th>역할</th><th>비고</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>GitHub Actions <code>windows-latest</code> + tauri-action</strong></td><td>정식 x64 빌드·릴리스 경로</td><td>공식 표준 파이프라인. 서명 통합 지점도 여기</td></tr>
+      <tr><td>Parallels Windows 11 ARM VM (Apple Silicon)</td><td>일상 개발·실행 검증 (CI가 빌드한 x64 아티팩트를 x64 에뮬레이션으로 실행)</td><td>VM 내 네이티브 ARM 빌드는 마찰 보고 있음(ring 크레이트 등) — 시도하되 시간 박스. <strong>캡처 API·DPI 거동은 VM 그래픽 드라이버 영향 가능성 → 최종 검증은 실기 필수</strong></td></tr>
+      <tr><td>실기 Windows 머신</td><td>W0 스파이크·각 Phase 완료 기준 검증 (DPI 매트릭스·멀티모니터·터미널)</td><td>확보 방법은 착수 전 사용자 결정(§12) — 이 계획의 유일한 물리적 선행 조건</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small">macOS에서의 크로스 컴파일(cargo-xwin)은 공식 문서가 "last resort"로 명시한 실험 경로 — 로컬 빠른 산출물 확인용 보조 수단으로만 취급한다.</p>
+</section>
+
+<!-- ============================================================ 9 -->
+<section class="card" id="s9">
+  <h2>9. 작업 계획 — Phase W0~W4</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> macOS 때와 같은 전략이에요. 가장 위험한 가설들(AI가 Windows 주소를 읽을까? 단축키가 울릴까? 화면 캡처가 정확할까?)을 앱을 고치기 전에 가장 싸게 먼저 실험하고, 그다음 뼈대 관통 → 살 붙이기 → 다듬기 순서로 가요.</p>
+
+  <figure>
+    <svg viewBox="0 0 880 250" role="img" aria-label="Phase W0~W4 로드맵 타임라인">
+      <defs>
+        <marker id="arr6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <text x="20" y="34" font-size="12" font-weight="600" fill="#374151">산정 채택 6~9 active-day (Phase 명목 합계 5~9, §10) · 선행: 착수 승인 + Windows 기기 확보</text>
+
+      <!-- W0 -->
+      <rect x="20" y="52" width="120" height="118" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="80" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">Phase W0</text>
+      <text x="80" y="94" text-anchor="middle" font-size="12" fill="#2563eb">1~1.5d</text>
+      <text x="80" y="116" text-anchor="middle" font-size="11" fill="#374151">검증 스파이크</text>
+      <text x="80" y="132" text-anchor="middle" font-size="11" fill="#374151">환경 셋업 포함</text>
+      <text x="80" y="152" text-anchor="middle" font-size="10" fill="#6b7280">Windows 정책 확정</text>
+
+      <!-- W1 -->
+      <rect x="155" y="52" width="165" height="118" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="237" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">Phase W1</text>
+      <text x="237" y="94" text-anchor="middle" font-size="12" fill="#2563eb">1.5~2.5d</text>
+      <text x="237" y="116" text-anchor="middle" font-size="11" fill="#374151">셸 이식 + 오버레이 MVP</text>
+      <text x="237" y="132" text-anchor="middle" font-size="11" fill="#374151">캡처→Ctrl+V 관통</text>
+      <text x="237" y="152" text-anchor="middle" font-size="10" fill="#6b7280">도그푸딩 시작</text>
+
+      <!-- W2 -->
+      <rect x="335" y="52" width="165" height="118" rx="8" fill="#fffbeb" stroke="#d97706"/>
+      <text x="417" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">Phase W2</text>
+      <text x="417" y="94" text-anchor="middle" font-size="12" fill="#b45309">1~2d</text>
+      <text x="417" y="116" text-anchor="middle" font-size="11" fill="#374151">어노테이터 통합</text>
+      <text x="417" y="132" text-anchor="middle" font-size="11" fill="#374151">좌표 정책·경로 스타일</text>
+      <text x="417" y="152" text-anchor="middle" font-size="10" fill="#6b7280">E2E 3종 마커 통과</text>
+
+      <!-- W3 -->
+      <rect x="515" y="52" width="190" height="118" rx="8" fill="#ecfdf5" stroke="#059669"/>
+      <text x="610" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">Phase W3</text>
+      <text x="610" y="94" text-anchor="middle" font-size="12" fill="#047857">1.5~3d</text>
+      <text x="610" y="116" text-anchor="middle" font-size="11" fill="#374151">멀티모니터·창 선택</text>
+      <text x="610" y="132" text-anchor="middle" font-size="11" fill="#374151">터미널 실측·NSIS 릴리스</text>
+      <text x="610" y="152" text-anchor="middle" font-size="10" fill="#6b7280">배포 가능 setup.exe</text>
+
+      <!-- W4 -->
+      <rect x="720" y="52" width="145" height="118" rx="8" fill="#ffffff" stroke="#9ca3af" stroke-dasharray="5 4"/>
+      <text x="792" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#6b7280">Phase W4</text>
+      <text x="792" y="94" text-anchor="middle" font-size="12" fill="#6b7280">백로그</text>
+      <text x="792" y="116" text-anchor="middle" font-size="11" fill="#6b7280">Store/MSIX · 서명</text>
+      <text x="792" y="132" text-anchor="middle" font-size="11" fill="#6b7280">크로스 모니터 드래그</text>
+      <text x="792" y="152" text-anchor="middle" font-size="10" fill="#9ca3af">필요 실증 시에만</text>
+
+      <!-- axis -->
+      <line x1="20" y1="200" x2="850" y2="200" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr6)"/>
+      <text x="838" y="224" text-anchor="end" font-size="12" fill="#6b7280">시간 →</text>
+      <line x1="145" y1="194" x2="145" y2="206" stroke="#9ca3af"/>
+      <line x1="325" y1="194" x2="325" y2="206" stroke="#9ca3af"/>
+      <line x1="505" y1="194" x2="505" y2="206" stroke="#9ca3af"/>
+      <line x1="710" y1="194" x2="710" y2="206" stroke="#9ca3af"/>
+    </svg>
+    <figcaption>그림 ③ 로드맵 — W0이 세 갈래 리스크(에이전트 경로·단축키 회귀·캡처 픽셀)를 앱 코드 수정 없이 최전방에서 검증한다.</figcaption>
+  </figure>
+
+  <h3>Phase별 상세</h3>
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>목표</th><th>산출물</th><th>완료 기준</th><th>예상</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>W0</strong><br>검증 스파이크</td>
+        <td>앱 코드를 고치기 전에 Windows 3대 가설을 실기기에서 검증</td>
+        <td>개발환경(실기기/VM + 툴체인 + CI 골격) · 스로어웨이 테스트 스크립트 · 수동 작성 CapNote 블록</td>
+        <td><ul style="margin:0;padding-left:16px">
+          <li>Claude Code 경로 E2E: 네이티브 백슬래시/슬래시 Read · WSL /mnt/c Read(+C:\ 자동 변환 여부) → <strong>pathStyle 기본값 확정</strong></li>
+          <li>터미널 4종(WT/VS Code/mintty/conhost) 멀티라인 붙여넣기 실측</li>
+          <li>xcap 캡처: 125%/150%에서 물리 픽셀·정확 배율 + Win11 프라이버시 토글 Off 거동</li>
+          <li>global-shortcut 콜백 스모크 + 오버레이 창 표시 지연 실측</li>
+          <li>수동 CapNote 블라인드 지목(마커 3종, macOS Phase 0 방식) → <strong><code>scale:</code> 표기 확정</strong></li>
+        </ul>상세 절차는 §12 체크리스트 1~7</td>
+        <td>1~1.5d</td>
+      </tr>
+      <tr>
+        <td><strong>W1</strong><br>셸 이식 + 오버레이 MVP</td>
+        <td>루프를 최단 경로로 관통 → Windows에서 도그푸딩 시작</td>
+        <td>플랫폼 분리 리팩터(<code>cfg</code> 경계, <code>windows.rs</code> 포커스 복귀, <code>~</code>→USERPROFILE) · xcap 통합 · 단일(주) 모니터 프리즈 오버레이(드래그 선택·ESC) · 트레이(RGBA 아이콘)·단축키·클립보드</td>
+        <td>실기기에서 캡처→Ctrl+V까지 어노테이션 없이 완주(macOS Phase 1 대응). macOS 빌드 무회귀(<code>cargo check</code> 양 타깃 + macOS 스모크)</td>
+        <td>1.5~2.5d</td>
+      </tr>
+      <tr>
+        <td><strong>W2</strong><br>어노테이터 통합 + 좌표 정책</td>
+        <td>대표 시나리오를 Windows에서 실사용 가능하게</td>
+        <td>어노테이터 연결(Ctrl 키 분기·라벨) · <code>resized_size()</code> 이중 제약 다운스케일 + 프로필 설정 · <code>scale:</code> 실측 기록 · pathStyle 설정·온보딩 질문 · 반올림 규칙(±1px) 확정</td>
+        <td>실제 Claude Code에서 마커 3종(point/rect/arrow) 지목 E2E 통과 — 125%와 150% 배율 각각에서. <strong>유닛 테스트만으로 통과 처리 금지</strong>(검증 관례 승계)</td>
+        <td>1~2d</td>
+      </tr>
+      <tr>
+        <td><strong>W3</strong><br>폴리싱·멀티모니터·배포</td>
+        <td>매일 쓰는 도구의 신뢰성 + 배포 가능 상태</td>
+        <td>모니터별 오버레이(mixed-DPI 100%+150% 실측) · 창 선택 모드(EXTENDED_FRAME_BOUNDS) · 오버레이 표시 &lt;300ms(사전 생성 창) · 터미널 매트릭스 실측·트러블슈팅 문서 · GitHub Actions 릴리스(NSIS+downloadBootstrapper) · SmartScreen 실측·README 안내 · autostart(선택 — 수요 시, #771 확인)</td>
+        <td>지목 정확도 평가(실물 3건 블라인드) 통과 + mixed-DPI 실측 통과 + 배포 가능한 setup.exe (서명은 보류 — macOS 공증과 동일 구조) + HANDOFF.md·CLAUDE.md 정합 갱신(코드 구조·빌드 커맨드·플랫폼 서술)</td>
+        <td>1.5~3d</td>
+      </tr>
+      <tr>
+        <td><strong>W4</strong><br>백로그</td>
+        <td>필요가 실증된 것만 착수</td>
+        <td>Microsoft Store/MSIX(+Snipping Tool 프로토콜 재평가) · 코드 서명(OV) · 크로스 모니터 드래그 선택 · HDR 모니터 대응 · ARM64 네이티브 빌드 · winget 배포 · <kbd>PrtScn</kbd> 키 바인딩 옵션</td>
+        <td>각 항목별 실수요 확인 후 개별 판단</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============================================================ 10 -->
+<section class="card" id="s10">
+  <h2>10. 일정 산정</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> "몇 명이 몇 달"이 아니라 실제로 재어 둔 "내 하루 속도"로 계산해요. 이번엔 앵커가 하나 더 있어요 — 똑같은 제품의 macOS판을 실제로 며칠 만에 만들었는지를 이미 알거든요.</p>
+  <p>산정 기준은 macOS판과 동일: <strong>1인 + AI 오케스트레이션, 실측 개인 속도(active-day)</strong> — <code>~/productivity-baseline.md</code> §6 변환 공식을 적용하고, 사용한 가정을 전부 명시한다.</p>
+
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th>가정 / 단계</th><th>값</th><th>비고</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>관례적 추정 앵커</td>
+        <td>이 규모 도구의 Windows 이식 + 자체 캡처 오버레이 신규 ≈ <strong>1.5~2.5 eng-month</strong></td>
+        <td>분해: 셸 이식·플랫폼 분리 ~0.5 + 자체 캡처 오버레이(신규 UI) ~0.5~1 + DPI/터미널 QA·배포 파이프라인 ~0.5~1 eng-mo (1인 Windows 데스크톱 개발자 기준). 변환의 출발점으로만 사용</td>
+      </tr>
+      <tr>
+        <td>작업 믹스</td>
+        <td>압축형 ~35% / 표준형 ~35% / 직렬꼬리 ~30%</td>
+        <td>압축형: cfg 분리 리팩터·키 분기·경로 처리·NSIS/CI 설정·resized_size 이식(참조 구현 존재)·문서 / 표준형: 오버레이 선택 UI·xcap 통합·pathStyle 설정·트레이 / 직렬꼬리: 실기기 QA 매트릭스(DPI·멀티모니터·터미널 4종·Claude Code E2E), #2646 스모크, 포커스 복귀·SmartScreen·오버레이 함정 실측</td>
+      </tr>
+      <tr>
+        <td>블렌디드 레버리지 계산</td>
+        <td>1.5~2.5 eng-mo → <strong>3.2~5.4 active-day</strong></td>
+        <td>레버리지 45/11/5 적용: 예) 2 eng-mo = 43.4 eng-day → 0.35×43.4/45 + 0.35×43.4/11 + 0.30×43.4/5 ≈ 4.3 ad</td>
+      </tr>
+      <tr>
+        <td>보정 (baseline §7 체크리스트)</td>
+        <td>+3.0~4.6 ad</td>
+        <td>이중 계상 방지 규약: 작업 믹스의 직렬꼬리 30%에는 <em>QA 1회 실행분</em>만 포함된 것으로 정의하고, 체크리스트 가산은 <em>반복 루프(재실측·수정 후 재검) 잔여분</em>으로 한정 — ② 런타임/시각 QA 루프 3트랙(오버레이·DPI·터미널): 트랙당 +1~3 중 1회분을 믹스에 계상했으므로 잔여 +0.7~1/트랙 ≈ <strong>+2~3</strong> · ③ 외부 미지 3rd-party 디버깅(xcap·WebView2·SmartScreen): 직렬꼬리 버킷 ×1.5 = <strong>+1.0~1.6</strong></td>
+      </tr>
+      <tr>
+        <td>체크리스트 외 추가 항목</td>
+        <td>+0.5~1 ad</td>
+        <td>환경 셋업(기기/VM·툴체인·CI 골격 — Windows 트랙 1회성 비용)</td>
+      </tr>
+      <tr>
+        <td>체크리스트 잔여 3항목 판정</td>
+        <td>①적용 ④가정 ⑤달력버퍼</td>
+        <td>① 직렬 임계경로 2개 이상 → 적용: 직렬꼬리+보정 합(≈5.0~7.9 ad)이 달력 하한을 결정(아래 콜아웃) · ④ 맥락전환/병행 트랙 → <strong>이 트랙 단독 집중 가정</strong> (sweditor-v2 등과 병행 시 ÷18.8 대신 ÷15로 재환산 = 달력 ×1.25) · ⑤ 1인 SPOF → 달력 상한에 10~15% 여유로 흡수</td>
+      </tr>
+      <tr>
+        <td>공식 계산 결과</td>
+        <td>6.7~11 → <strong>7~11 active-day</strong></td>
+        <td>3.2~5.4 + 3.0~4.6 + 0.5~1</td>
+      </tr>
+      <tr>
+        <td>실측 앵커 교차검증</td>
+        <td>macOS판: 계획 6~9 ad → <strong>실측 ~2 ad</strong> (Phase 0~3, 07-02~07-03 · git log 전 브랜치 실측)</td>
+        <td>같은 아키텍처·같은 개발 체제의 최근접 실측 — 계획이 ~3배 과대였다. 보정 적용은 버킷별로: 압축·표준형 버킷(1.3~2.2 ad)에만 실측 압축비(~1/3)를 적용 → 0.4~0.7, 직렬꼬리(2.0~3.3)+보정(3.5~5.6)은 실기기 순차 확인이라 압축 불가로 유지 → <strong>5.9~9.6 ad</strong></td>
+      </tr>
+      <tr>
+        <td><strong>채택 결과</strong></td>
+        <td><strong>약 6~9 active-day ≈ 0.3~0.5 달력개월</strong></td>
+        <td>공식 계산(7~11)과 앵커 보정(5.9~9.6)의 교집합을 반올림. 달력 변환 ÷18.8 (baseline §4, 단독 집중 가정): 6/18.8≈0.32 ~ 9/18.8≈0.48달. Phase 명목 합계(W0~W3 = 5~9d)의 하한 5는 전 Phase 동시 최선일 때만 성립 — 채택 범위가 더 정직하다. <strong>기기 확보 등 사용자 개입 대기 시간은 불포함</strong></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout green"><strong>왜 하한이 존재하나:</strong> 이번 트랙의 직렬꼬리는 전부 "Windows 실기기에서 순서대로 확인해야 하는 일"이다 — 단축키 회귀 스모크, DPI 배율별 좌표 실측, 터미널 4종 붙여넣기, Claude Code 네이티브/WSL E2E, SmartScreen 첫 배포 거동. 병렬화도 AI 가속도 이 부분은 줄이지 못하므로 달력 하한을 결정한다. W0이 이 리스크들을 최전방에 배치한 이유다. 완료 후 실제 active-day를 <code>productivity-baseline.md</code> §8 절차로 역검증·갱신한다.</div>
+</section>
+
+<!-- ============================================================ 11 -->
+<section class="card" id="s11">
+  <h2>11. 주요 리스크 9건</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 미리 알아낸 함정 목록이에요. macOS 때의 함정 8개 중 상당수는 사라졌고(권한 문제 등), 대신 Windows만의 새 함정(직접 만드는 캡처 화면, 어중간한 배율)이 생겼어요.</p>
+  <div class="tblwrap">
+  <table>
+    <thead>
+      <tr><th style="width:26%">리스크</th><th style="width:34%">영향</th><th>대응</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1. 자체 오버레이 품질 (macOS에선 OS가 공짜로 주던 것)</td>
+        <td>표시 지연(WebView2 cold start)·z-order·Win11 taskbar 겹침(tauri-apps/tauri#7328)·풀커버 창의 하부 비디오 일시정지(tauri-apps/tauri#7401) — 캡처 UX 전체의 신뢰가 걸림</td>
+        <td>프리즈 프레임 방식(occlusion 무관 가능성 — W0 확인) + 숨김 오버레이 사전 생성·재사용(&lt;300ms 목표) + <strong>2 active-day 탈출 룰: 오버레이만 native Win32 layered window로 국소 교체</strong> (§5)</td>
+      </tr>
+      <tr>
+        <td>2. 전역 단축키의 Windows 신뢰성</td>
+        <td>콜백 미발화 시 제품 진입점 마비. 단 과거 리포트(tauri-apps/plugins-workspace#2646)는 2025-04에 제보 환경 원인으로 종결 — <strong>알려진 미해결 결함은 없음</strong> (보험 성격의 리스크)</td>
+        <td>W0 통상 스모크 → 이상 시 global-hotkey 크레이트 직접 사용 → 트레이 메뉴 폴백 상시 유지. PrtScn·OneDrive 가로채기와의 충돌은 기본 키(Alt+Shift+C) 유지로 회피</td>
+      </tr>
+      <tr>
+        <td>3. mixed-DPI 멀티모니터 좌표 매핑</td>
+        <td>모니터마다 배율이 다르면 마커가 엉뚱한 곳을 지목 → 신뢰 붕괴 (ShareX 동종 재발성 버그 다수)</td>
+        <td>모니터당 오버레이 1개 + 모니터 로컬 물리 좌표 산술 + 크로스 모니터 드래그 v1 금지 + Rust 단독 지오메트리(웹뷰 화면 API 금지) — §6.5 원칙으로 원천 회피. 100%+150% 실측이 W3 완료 기준</td>
+      </tr>
+      <tr>
+        <td>4. 분수 배율 다운스케일이 1px 디테일 손상</td>
+        <td>125%/150%에서 축소 배율이 0.38~0.76 — 보고 대상(1px 보더)이 안티에일리어싱으로 뭉개질 수 있음 (macOS 리스크 #3의 악화판)</td>
+        <td>영역 캡처(네이티브 보존 구간) 유도 UX + Lanczos3 리샘플 + 고해상도 프로필 옵션. 전체 화면 캡처의 잔존 리스크는 인지하고 감수</td>
+      </tr>
+      <tr>
+        <td>5. Anthropic 리사이즈 이중 제약 (신규 발견)</td>
+        <td>"장변 1568" 단일 규칙으로는 화면비에 따라 모델이 재축소 → 좌표 1:1 깨짐. macOS 현행 구현도 동일 이슈 내포</td>
+        <td>Windows판은 공식 <code>resized_size()</code>로 처음부터 구현. macOS 백포트는 별도 결정(§12) — 이 트랙에 섞지 않음. 외부 규칙 변경 감시 대상(리스크 9와 결합)</td>
+      </tr>
+      <tr>
+        <td>6. WSL/네이티브 경로 이원성</td>
+        <td>잘못된 경로 스타일이면 에이전트가 이미지를 못 읽음 — 시각 채널 유실</td>
+        <td>pathStyle 설정(windows/wsl) + 온보딩 1회 질문 + W0에서 백슬래시/슬래시/자동 변환 실측으로 기본값 확정 (§7)</td>
+      </tr>
+      <tr>
+        <td>7. 무서명 배포의 SmartScreen 경고</td>
+        <td>첫 실행 마찰 — 단 실행 차단은 아님</td>
+        <td>README에 "추가 정보 → 실행" 안내 + 한국 개인 개발자의 서명 옵션 제약(Azure Artifact Signing 거주지 요건)을 명시하고 배포 규모 실증 시 OV 재평가 (§8)</td>
+      </tr>
+      <tr>
+        <td>8. 개발·검증 환경 (Apple Silicon 개발자의 Windows 트랙)</td>
+        <td>VM의 캡처·DPI 거동이 실기와 다를 수 있음 · ARM VM 네이티브 빌드 마찰(ring 등) · 크로스 컴파일은 last resort</td>
+        <td>3단 구성(§8): CI x64 빌드 = 정경로 · VM = 일상 실행 검증 · 실기 = Phase 완료 기준. 실기 확보는 착수 전 사용자 결정(§12)</td>
+      </tr>
+      <tr>
+        <td>9. 외부 가정 결합 (macOS 리스크 #8 승계)</td>
+        <td>Anthropic 비전 리사이즈 규칙(1568/1568·2576/4784), Claude Code의 Windows 경로 Read·Alt+V·터미널 거동이 바뀌면 전제가 흔들림</td>
+        <td>거동 변경 감지 시 정책 재검토 — 관리 항목으로 명시. 이 계획서의 조사 시점(2026-07-03)을 §1에 기록해 둠</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ============================================================ 12 -->
+<section class="card" id="s12">
+  <h2>12. 미해결 질문·사용자 결정·첫 행동</h2>
+  <p class="eli"><strong>쉽게 말하면:</strong> 아직 답을 모르는 것들과, 개발자가 아니라 "당신"이 정해야 하는 것들(기기 마련, 누구까지 지원할지), 그리고 착수 첫날 할 일 목록이에요.</p>
+
+  <h3>사용자 결정 5건 (차단 수준 표기)</h3>
+  <ol start="0">
+    <li><strong>[W0 차단] Windows 트랙 착수 여부 자체</strong> — HANDOFF.md §4는 크로스플랫폼을 "필요 실증 시에만" 착수하는 백로그로 게이트한다. 이 계획서는 착수 결정이 아니라 착수 <em>준비</em>다 — 실수요(본인의 Windows 사용 계획 또는 초기 사용자 수요)를 확인하고 착수를 승인하는 결정이 선행되어야 한다.</li>
+    <li><strong>[W0 차단] Windows 검증 기기 확보 방법</strong> — 실기 Windows 머신(권장: 125%/150% 배율 노트북 + 외부 모니터로 mixed-DPI 재현 가능) vs Parallels VM만으로 시작(최종 검증만 실기 대여).</li>
+    <li><strong>[W0 착수 전 권장]</strong> <strong>1차 소비 환경</strong> — 본인/초기 사용자의 Claude Code가 네이티브인지 WSL인지 → pathStyle 기본값과 W0 E2E 우선순위에 반영. 미정이면 W0에서 양쪽 모두 E2E.</li>
+    <li><strong>[W1 전까지]</strong> <strong>최소 지원 OS 라인</strong> — Windows 10 21H2+(제안) vs Windows 11 전용. Win10 유지 시 WGC 노란 테두리 제약 때문에 GDI 경로 고정이 사실상 확정된다.</li>
+    <li><strong>[W2 전까지 · 선택]</strong> <strong>불변식 3 문언 개정</strong> — "장변 ≤1568px 단일 규칙"을 "공식 이중 제약 <code>resized_size()</code> 기준"으로 개정할지(§6.2). 개정 승인 시 CLAUDE.md·plan.html의 해당 문구·수치를 함께 갱신하고 고해상도 프로필이 해금된다. 미승인이어도 v1(범용 프로필)은 현행 문언 안에서 진행 가능.</li>
+  </ol>
+
+  <h3>미해결 질문 (W0~W3에서 답을 얻는다)</h3>
+  <ul>
+    <li>Claude Code(WSL)가 프롬프트 속 <code>C:\</code> 경로를 <code>/mnt/c</code>로 자동 변환하는가? (서드파티 블로그 주장만 존재 — 사실이면 pathStyle의 가치가 달라짐)</li>
+    <li>네이티브 Claude Code의 Read가 백슬래시 경로를 손실 없이 처리하는가, 슬래시가 더 안전한가?</li>
+    <li>xcap GDI 캡처가 Win11 프라이버시 토글 Off에서 실제로 차단되는가? (문서와 실사례 상충)</li>
+    <li>오버레이 표시 지연이 사전 생성 창 전략으로 &lt;300ms에 들어오는가?</li>
+    <li>분수 배율에서 크롭 경계 반올림은 floor와 round 중 무엇이 ±1px 드리프트 없이 안전한가?</li>
+    <li>macOS판에 <code>resized_size()</code> 이중 제약을 백포트할 것인가, 언제? (표준 티어 에이전트 사용자가 실증되기 전까지 보류가 합리적일 수 있음)</li>
+    <li>HDR 모니터에서 GDI 캡처 색상 washed-out 문제 — v1 스코프 제외가 타당한가? (사용자 비중 확인)</li>
+  </ul>
+
+  <h3>첫 행동 — Phase W0 스파이크 체크리스트 (1~1.5d)</h3>
+  <p>macOS Phase 0의 전략 그대로: 앱 코드를 한 줄도 고치지 않고, Windows 3대 가설을 실기기에서 검증한다.</p>
+  <ol>
+    <li>Windows 기기(§12 결정 1)에 Rust MSVC 툴체인 + pnpm + Claude Code(네이티브·WSL 둘 다)를 설치한다. GitHub Actions에 <code>windows-latest</code> 빌드 워크플로 골격을 올려 x64 아티팩트가 나오는지 확인한다.</li>
+    <li>macOS판으로 만든 실제 CapNote 블록의 경로만 Windows 경로로 손질해, 네이티브 Claude Code에 <kbd>Ctrl+V</kbd>: 백슬래시/슬래시 각각 Read 성공 여부 → WSL Claude Code에 /mnt/c 경로와 <code>C:\</code> 경로 각각 → <strong>pathStyle 기본값 확정</strong>.</li>
+    <li>같은 블록을 Windows Terminal / VS Code / Git Bash(mintty) / conhost 4종에 붙여넣어 멀티라인 도착·개행 보존·한국어 노트를 확인한다 → 지원 매트릭스(§7.3) 확정.</li>
+    <li>스로어웨이 Rust 바이너리로 xcap <code>Monitor::all()</code> 캡처: 125%/150% 모니터에서 반환 크기가 물리 픽셀인지, <code>scale_factor()</code>가 정확한지 실측. Win11 프라이버시 토글 Off 거동도 확인.</li>
+    <li>같은 바이너리에 tauri-plugin-global-shortcut(또는 global-hotkey)을 붙여 <kbd>Alt+Shift+C</kbd> 콜백 발화를 확인한다(통상 스모크 — §8). 최소 Tauri 창을 decorations:false·alwaysOnTop으로 띄워 표시 지연을 재본다.</li>
+    <li>캡처 픽스처를 스로어웨이 HTML 캔버스로 번인(마커 3종)하고, <code>resized_size()</code> 범용 프로필로 축소해 수동 CapNote 블록을 만든 뒤 블라인드 지목 테스트(macOS Phase 0의 9/9 기준) → <strong>다운스케일 프로필 기본값·<code>scale:</code> 표기 확정</strong>.</li>
+    <li>결과를 <code>docs/w0-verification.md</code>로 기록하고 이 계획서의 트래커·정책(§6~7)과 HANDOFF.md(문서 맵·진행 상태)를 갱신 → W1 착수.</li>
+  </ol>
+</section>
+
+<footer>여기요!! (구 Capture for Agents) · Windows 버전 작업계획서 · 설계 단계 v1 · 2026-07-03</footer>
+
+</main>
+</body>
+</html>

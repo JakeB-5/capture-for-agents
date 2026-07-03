@@ -9,6 +9,7 @@
 - 릴리스 번들: `pnpm tauri build` → `.app` 9.8MB + DMG 3.5MB (aarch64, **ad-hoc 서명**). 도그푸딩은 릴리스 `.app`을 /Applications에 두고 쓰는 운용 권장(재빌드마다 TCC 재승인 리스크 회피).
 - 커밋 흐름: `dev` ← `feature/phase3-polish` `--no-ff` 머지 완료(`03aafc4`; Wave A `36030a4` → Wave B `b0a762d` → 문서 `c9e206b`). 원격: `https://github.com/JakeB-5/capture-for-agents` (퍼블릭, 기본 브랜치 dev — 이후 브랜치는 `push -u origin <branch>` + dev 대상 PR).
 - 코드 지도: `src/annotations|downscale|capnote|burnin|annotator.ts` + `src/main.ts` / `src-tauri/src/lib.rs`(커맨드 9종·트레이·GC 스레드) · `capture.rs`(스폰·pHYs 스케일·GC) · `settings.rs`(설정 로드/저장/라벨) · `macos.rs`(포커스 복귀)
+- **Windows 이식 계획서 작성 완료 (07-03)**: `docs/plan-windows.html` — 착수는 미결(문서 §12 결정 0~2: 착수 승인·검증 기기·소비 환경이 선행). W0 착수 세션은 그 문서를 단일 출처로 읽을 것. 참고: 계획 수립 중 Anthropic 비전 리사이즈가 "장변+비주얼 토큰 이중 제약"임이 확인됨 — 현행 macOS 다운스케일(1568 단일 규칙)의 백포트 여부는 별도 결정 항목(같은 문서 §6.2·§12).
 
 ## 2. 보류 1건 (해제 조건 명시)
 
@@ -25,7 +26,7 @@
 
 ## 4. Phase 4 백로그 (필요 실증 시에만 — plan.html §8)
 
-캡처 히스토리 팔레트(UI) · 클립보드 이미지 동시 탑재 옵션 · capnote CLI / MCP 서버 모드(에이전트가 역으로 캡처 요청) · 크로스플랫폼. CapNote v1.1 문법 백로그는 `docs/phase0-verification.md` §5 — **v1 문법은 동결, 변경은 v1.1 제안으로만.**
+캡처 히스토리 팔레트(UI) · 클립보드 이미지 동시 탑재 옵션 · capnote CLI / MCP 서버 모드(에이전트가 역으로 캡처 요청) · 크로스플랫폼(Windows 이식 계획서 작성 완료: `docs/plan-windows.html` — 착수는 여전히 실수요 실증 + 사용자 승인 게이트). CapNote v1.1 문법 백로그는 `docs/phase0-verification.md` §5 — **v1 문법은 동결, 변경은 v1.1 제안으로만.**
 
 ## 5. 규칙 리마인드
 
