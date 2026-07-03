@@ -48,6 +48,7 @@ dev 모드에서는 TCC "화면 기록" 권한이 터미널/IDE에 귀속되는 
 - `HANDOFF.md` — 세션 핸드오프 (현재 진행 상태 · 다음 작업 체크리스트, Phase 완료 시마다 갱신)
 - `README.md` — 제품 소개
 - `docs/plan.html` — 작업계획서 · 설계 근거 (Phase 0~4 로드맵, 리스크, 일정 산정, 상단 진행 트래커 포함)
+- `docs/plan-windows.html` — Windows 이식 작업계획서 (Phase W0~W4 · 착수는 실수요 실증 + 사용자 승인 게이트, 문서 §12)
 - `docs/phase0-verification.md` — Phase 0 포맷 검증 리포트 (스펙 동결 근거)
 - `spike/phase0/` — 검증 픽스처·캡처·테스트 블록 (재현용)
 
