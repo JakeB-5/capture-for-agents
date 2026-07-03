@@ -58,7 +58,8 @@ export function resizedSize(width, height, { maxEdge, maxTokens } = PROFILES.uni
 }
 
 // CLI: node resized-size.mjs <width> <height> [universal|highres]
-if (import.meta.url === `file://${process.argv[1]}`) {
+// (guarded so the module also loads in the browser, where `process` is undefined)
+if (typeof process !== "undefined" && import.meta.url === `file://${process.argv[1]}`) {
   const [w, h, profile = "universal"] = process.argv.slice(2);
   if (!w || !h) {
     console.error("usage: node resized-size.mjs <width> <height> [universal|highres]");
