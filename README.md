@@ -6,7 +6,7 @@ A macOS screenshot capture + annotation tool that delivers visual feedback to AI
 
 *Yeogiyo!!* (여기요!!) is Korean for calling out **"over HERE!!"** — the feeling of pointing a finger at the screen: *"the fix goes right here!!"* (formerly *Capture for Agents*)
 
-> **Status: ✅ Phase 3 complete (2026-07-03) — distributable build.** The full loop (capture → annotate → ⌘V) is verified end-to-end on a real device, including history, settings, and a release DMG (ad-hoc signed). Notarization (no Apple Developer account yet) and multi-monitor field testing (single-monitor environment) are the only deferred items. The detailed work plan lives in [docs/plan.html](docs/plan.html) (Korean).
+> **Status: ✅ Phase 3 complete (2026-07-03) — distributable build.** The full loop (capture → annotate → ⌘V) is verified end-to-end on a real device, including history, settings, and a release DMG (ad-hoc signed). Notarization (no Apple Developer account yet) is the only deferred item; multi-monitor coordinates are field-verified on an external 4K display. The detailed work plan lives in [docs/plan.html](docs/plan.html) (Korean).
 
 ---
 
@@ -99,7 +99,7 @@ In Claude Code on macOS, pasting an *image* is Ctrl+V, not ⌘V — a habit trap
 | 0 | ✅ **Done (2026-07-02)** Format validation spike — E2E with 6 blind agents (9/9 marker identification), spec frozen. [Report](docs/phase0-verification.md) (Korean) | 0.5d |
 | 1 | ✅ **Done (2026-07-02)** Working skeleton — Tauri v2 menubar app, global shortcut, screencapture wrapper, path-only clipboard, focus restore, TCC onboarding | 1–2d |
 | 2 | ✅ **Done (2026-07-02)** Annotation + CapNote — smart tools with a single number sequence, inline notes, burn-in renderer, 1568px downscale pipeline, encoder, file GC. [Report](docs/phase2-verification.md) (Korean) | 2–3d |
-| 3 | ✅ **Done (2026-07-03)** Polish & hardening — window-show speed, keyboard-only flow, 10-entry history (re-copy/re-annotate), badge collision avoidance, single instance, settings, 3-terminal paste tests, agent accuracy eval, release DMG (ad-hoc). [Report](docs/phase3-verification.md) (Korean) | 2–3d |
+| 3 | ✅ **Done (2026-07-03)** Polish & hardening — window-show speed, keyboard-only flow, 10-entry history (re-copy/re-annotate), badge collision avoidance, single instance, settings, 3-terminal paste tests, 4K multi-monitor coordinate check, agent accuracy eval, release DMG (ad-hoc). [Report](docs/phase3-verification.md) (Korean) | 2–3d |
 | 4 | Backlog — history palette, capnote CLI / MCP server mode, cross-platform (only if demand proves out) | — |
 
 ## Development
