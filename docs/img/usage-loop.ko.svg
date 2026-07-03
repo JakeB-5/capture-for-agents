@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 880 270" role="img" aria-label="전체 사용 루프 다이어그램" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}</style><rect width="880" height="270" fill="#ffffff"/>
+      <defs>
+        <marker id="arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+      <!-- Row 1 -->
+      <rect x="12" y="34" width="186" height="62" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="105" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">⌥⇧C</text>
+      <text x="105" y="80" text-anchor="middle" font-size="12" fill="#6b7280">전역 단축키 (설정 가능)</text>
+
+      <line x1="200" y1="65" x2="230" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="234" y="34" width="186" height="62" rx="8" fill="#f3f4f6" stroke="#6b7280"/>
+      <text x="327" y="60" text-anchor="middle" font-size="13" font-weight="600" class="mono" fill="#1f2937">screencapture -i</text>
+      <text x="327" y="80" text-anchor="middle" font-size="12" fill="#6b7280">영역 드래그 / 창 선택</text>
+
+      <line x1="422" y1="65" x2="452" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="456" y="34" width="186" height="62" rx="8" fill="#fffbeb" stroke="#d97706"/>
+      <text x="549" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">어노테이션 창</text>
+      <text x="549" y="80" text-anchor="middle" font-size="12" fill="#6b7280">클릭→타이핑→Enter 반복</text>
+
+      <line x1="644" y1="65" x2="674" y2="65" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="678" y="34" width="188" height="62" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="772" y="60" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">⌘Enter</text>
+      <text x="772" y="80" text-anchor="middle" font-size="12" fill="#6b7280">원샷 커밋 (번인+저장+복사)</text>
+
+      <!-- elbow connector row1 -> row2 -->
+      <polyline points="772,96 772,128 105,128 105,158" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+      <text x="438" y="122" text-anchor="middle" font-size="12" fill="#6b7280">창 닫힘 → 직전 앱 포커스 자동 복귀</text>
+
+      <!-- Row 2 -->
+      <rect x="12" y="162" width="186" height="62" rx="8" fill="#eff6ff" stroke="#2563eb"/>
+      <text x="105" y="188" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">클립보드</text>
+      <text x="105" y="208" text-anchor="middle" font-size="12" fill="#6b7280">CapNote 텍스트만 (이미지 없음)</text>
+
+      <line x1="200" y1="193" x2="286" y2="193" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="290" y="162" width="186" height="62" rx="8" fill="#f3f4f6" stroke="#6b7280"/>
+      <text x="383" y="188" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">터미널에서 ⌘V</text>
+      <text x="383" y="208" text-anchor="middle" font-size="12" fill="#6b7280">사용자에게 남는 유일한 행동</text>
+
+      <line x1="478" y1="193" x2="562" y2="193" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+      <rect x="566" y="162" width="300" height="62" rx="8" fill="#ecfdf5" stroke="#059669"/>
+      <text x="716" y="188" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2937">에이전트</text>
+      <text x="716" y="208" text-anchor="middle" font-size="12" fill="#6b7280">텍스트를 파싱하고 이미지를 Read로 열람</text>
+    </svg>

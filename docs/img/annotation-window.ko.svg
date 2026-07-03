@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 880 600" role="img" aria-label="어노테이션 창 UI 목업" xmlns="http://www.w3.org/2000/svg"><style>text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}</style><rect width="880" height="600" fill="#ffffff"/>
+      <defs>
+        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#d97706"/>
+        </marker>
+      </defs>
+      <!-- window frame -->
+      <rect x="50" y="16" width="780" height="548" rx="10" fill="#ffffff" stroke="#d1d5db"/>
+      <!-- title bar -->
+      <rect x="51" y="17" width="778" height="35" rx="9" fill="#f3f4f6"/>
+      <line x1="51" y1="52" x2="829" y2="52" stroke="#d1d5db"/>
+      <circle cx="72" cy="34" r="6" fill="#f87171"/>
+      <circle cx="92" cy="34" r="6" fill="#fbbf24"/>
+      <circle cx="112" cy="34" r="6" fill="#34d399"/>
+      <text x="450" y="39" text-anchor="middle" font-size="13" fill="#6b7280">Capture for Agents — 2026-07-02-164812.png (always-on-top)</text>
+
+      <!-- canvas: mock screenshot -->
+      <rect x="51" y="53" width="778" height="452" fill="#fafafa"/>
+      <rect x="90" y="78" width="700" height="40" rx="6" fill="#e0e7ff"/>
+      <rect x="106" y="92" width="90" height="12" rx="3" fill="#a5b4fc"/>
+      <!-- small icon (target of [3]) -->
+      <rect x="744" y="90" width="16" height="16" rx="3" fill="#94a3b8"/>
+
+      <!-- card (target of [1]) -->
+      <rect x="180" y="170" width="220" height="140" rx="6" fill="#ffffff" stroke="#eeeeee"/>
+      <rect x="196" y="186" width="80" height="60" rx="4" fill="#e5e7eb"/>
+      <rect x="196" y="258" width="180" height="9" rx="3" fill="#e5e7eb"/>
+      <rect x="196" y="274" width="132" height="9" rx="3" fill="#e5e7eb"/>
+      <!-- button (target of [2]) -->
+      <rect x="180" y="360" width="120" height="36" rx="6" fill="#3b82f6"/>
+      <text x="240" y="383" text-anchor="middle" font-size="12" fill="#ffffff">Buy now</text>
+
+      <!-- annotation [1]: rect around card -->
+      <rect x="172" y="162" width="236" height="156" fill="none" stroke="#d97706" stroke-width="2"/>
+      <line x1="158" y1="148" x2="174" y2="164" stroke="#d97706" stroke-width="1.5"/>
+      <circle cx="150" cy="140" r="12" fill="#d97706"/>
+      <text x="150" y="145" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">1</text>
+
+      <!-- annotation [2]: arrow between card and button -->
+      <line x1="240" y1="322" x2="240" y2="354" stroke="#d97706" stroke-width="2" marker-end="url(#arr2)"/>
+      <line x1="219" y1="338" x2="234" y2="338" stroke="#d97706" stroke-width="1.5"/>
+      <circle cx="207" cy="338" r="12" fill="#d97706"/>
+      <text x="207" y="343" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">2</text>
+
+      <!-- annotation [3]: point on icon -->
+      <circle cx="752" cy="98" r="5" fill="#d97706"/>
+      <circle cx="752" cy="98" r="10" fill="none" stroke="#d97706" stroke-width="1.5"/>
+      <line x1="731" y1="79" x2="744" y2="90" stroke="#d97706" stroke-width="1.5"/>
+      <circle cx="723" cy="72" r="12" fill="#d97706"/>
+      <text x="723" y="77" text-anchor="middle" font-size="12" font-weight="700" fill="#ffffff">3</text>
+
+      <!-- inline note popover for [2] -->
+      <path d="M290,338 L302,331 L302,345 z" fill="#ffffff" stroke="#d97706"/>
+      <rect x="301" y="308" width="356" height="62" rx="8" fill="#ffffff" stroke="#d97706"/>
+      <text x="317" y="333" font-size="13" fill="#1f2937">카드와 버튼 사이 마진 12px → 24px로 수정</text>
+      <rect x="317" y="342" width="2" height="16" fill="#2563eb"/>
+      <text x="326" y="356" font-size="11" fill="#9ca3af">Enter = 확정 · 빈 채로 Enter = 노트 생략</text>
+
+      <!-- hint bar -->
+      <line x1="51" y1="505" x2="829" y2="505" stroke="#e5e7eb"/>
+      <rect x="51" y="506" width="778" height="57" fill="#f8fafc"/>
+      <text x="440" y="530" text-anchor="middle" font-size="12" fill="#6b7280">클릭 = 마커 · 드래그 = 사각형 · Shift+드래그 = 화살표 · 1/2/3 = 도구 전환</text>
+      <text x="440" y="550" text-anchor="middle" font-size="12" fill="#6b7280">⌘Enter = 복사하고 닫기 · ⌘Z = 언두 · ⌫ = 삭제 · ESC = 취소</text>
+
+      <!-- toast -->
+      <rect x="574" y="440" width="236" height="40" rx="8" fill="#1f2937" opacity="0.9"/>
+      <text x="692" y="465" text-anchor="middle" font-size="12" fill="#ffffff">Copied — ⌘V into Claude Code</text>
+    </svg>
