@@ -7,7 +7,7 @@
       </defs>
       <!-- app container -->
       <rect x="30" y="30" width="540" height="264" rx="10" fill="#f8fafc" stroke="#94a3b8"/>
-      <text x="300" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">Capture for Agents.app — Tauri v2 (바이너리 ~10MB · 상주 ~30MB)</text>
+      <text x="300" y="56" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2937">여기요!!.app — Tauri v2 (바이너리 ~10MB · 상주 ~30MB)</text>
 
       <!-- rust shell -->
       <rect x="50" y="74" width="240" height="200" rx="8" fill="#eff6ff" stroke="#2563eb"/>
