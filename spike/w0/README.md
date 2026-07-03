@@ -56,11 +56,13 @@ WSL Claude Code에서 `wsl-mnt-c.txt` → `wsl-cpath.txt` 동일 반복 (후자�
 125%·150% 배율 모니터 구성에서:
 
 ```powershell
-.\winprobe.exe monitors
+.\winprobe.exe monitors   # 모니터별 물리 px 크기·scale factor 출력
+.\winprobe.exe capture    # 모니터별 winprobe-capture-<N>.png 저장 (현재 디렉터리)
 ```
 
-물리 픽셀 크기·scale factor 출력과 `winprobe-out\monitor-*.png` 실측 크기를 대조.
-설정 > 개인 정보 > "데스크톱 앱 스크린샷 허용"을 Off로 바꾼 뒤 재실행해 거동(실패/균일 픽셀 WARN) 기록.
+`monitors`의 물리 픽셀 크기·scale factor와 `winprobe-capture-<N>.png`의 실측 크기를 대조.
+설정 > 개인 정보 > "데스크톱 앱 스크린샷 허용"을 Off로 바꾼 뒤 `capture`를 재실행해
+거동(실패/균일 픽셀 WARN)을 기록.
 
 ### E. 단축키·오버레이 (체크리스트 5)
 
