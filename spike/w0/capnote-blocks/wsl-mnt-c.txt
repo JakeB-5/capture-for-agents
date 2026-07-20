@@ -1,0 +1,14 @@
+```capnote v1
+image: /mnt/c/Users/YOURNAME/.capnote/w0-fixture-2560x1440.png
+size: 1456x819
+scale: 0.71 image px = 1 CSS px
+source: screen capture @1.25x, downscaled to 1456x819 (2026-07-03 12:00)
+context: W0 경로 E2E — WSL Claude Code, /mnt/c 경로
+[1] rect (459,120)-(779,300)
+    이 카드에 1px solid #E5E7EB 보더가 빠져 있음. 시안에는 있는데 구현에 없음.
+[2] arrow (519,300)->(519,340)
+    카드와 아래 버튼 사이 간격이 지금 40px인데 시안 기준 24px로 줄일 것.
+[3] point (1107,32)
+    이 아이콘이 시안 기준 20x20인데 지금 16x16으로 렌더링됨.
+hint: Read the image file at the path above. Numbered badges matching [n] are burned into the image. Coordinates are image pixels (origin top-left); px values in notes are CSS px.
+```

@@ -1,0 +1,47 @@
+# Phase W0 CI skeleton (docs/plan-windows.html §8 빌드·검증 환경, §12 체크리스트 1).
+# Full Windows `tauri build` (NSIS) lands in W1 — src-tauri still has unconditional
+# macOS-only deps (objc2-app-kit), so W0 only proves the Windows toolchain path:
+# the frontend builds on windows-latest and the winprobe spike compiles to an
+# x64 .exe artifact that runs on the verification device.
+name: windows-build
+
+on:
+  push:
+    branches: [dev, "feature/**"]
+  workflow_dispatch:
+
+jobs:
+  winprobe:
+    name: winprobe spike (x64)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: spike/w0/winprobe
+      - name: Build winprobe (release)
+        run: cargo build --release --manifest-path spike/w0/winprobe/Cargo.toml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: winprobe-x64
+          path: spike/w0/winprobe/target/release/winprobe.exe
+          if-no-files-found: error
+
+  frontend:
+    name: frontend toolchain (windows-latest)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm build
+      - name: resized_size() port tests (plan §6.3 table)
+        run: node spike/w0/resized-size.test.mjs
